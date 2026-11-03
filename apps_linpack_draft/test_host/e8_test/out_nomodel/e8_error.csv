@@ -1,0 +1,11 @@
+﻿source,config,lanes,tag,phase,var,mr,lmul,kc,pipe,N,nb,meas_cycles,meas_fpcyc,meas_util_pct,model_cycles,model_util_pct,err_cycles_pct,delta_util_pp,model,model_bound,flag
+rtl,16_lanes,16,,swp,v2_autovec,0,0,0,0,256,,2306867,14.545,45.45,,,,,,,no_model
+rtl,16_lanes,16,,swp,rvv,8,2,128,0,256,,1363149,24.615,76.92,,,,,,,no_model
+rtl,4_lanes,4,,swp,v0_scalar,0,0,0,0,128,,4529848,0.926,11.57,,,,,,,no_model
+rtl,4_lanes,4,,swp,v2_autovec,0,0,0,0,256,,10066330,3.333,41.67,,,,,,,no_model
+rtl,4_lanes,4,,swp,rvv,8,2,128,0,256,,2726298,12.308,153.85,,,,,,,no_model
+rtl,4_lanes,4,,lp,linpack,8,2,128,0,512,64,20334192,4.426,55.33,,,,,,,no_model
+rtl,4_lanes,4,,lp,linpack,4,1,64,0,512,32,18882560,4.766,59.58,,,,,,,no_model
+e7,,4,clang-O3-fast-vec,swp,v2_autovec,0,0,0,0,256,,9898557,3.390,42.37,,,,,,,no_model
+e7,,4,clang-O3-novec,swp,v2_autovec,0,0,0,0,256,,31876710,1.053,13.16,,,,,,,no_model
+e7,,4,gcc-O3-fast-vec,swp,rvv,8,2,128,0,256,,3774874,8.889,111.11,,,,,,,no_model

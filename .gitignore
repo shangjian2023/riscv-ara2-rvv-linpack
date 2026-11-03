@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Host test binaries (rebuildable: see apps_linpack_draft/README.md)
+apps_linpack_draft/test_host/*.exe
+
+# Editor / OS
+Thumbs.db
+.DS_Store
+# Upstream Ara clone (re-clone from pulp-platform/ara; see rtl_experiment_plan.md)
+teammate_draft/riscv/work/reference/ara/

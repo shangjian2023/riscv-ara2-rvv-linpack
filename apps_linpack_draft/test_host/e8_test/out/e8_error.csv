@@ -1,0 +1,11 @@
+﻿source,config,lanes,tag,phase,var,mr,lmul,kc,pipe,N,nb,meas_cycles,meas_fpcyc,meas_util_pct,model_cycles,model_util_pct,err_cycles_pct,delta_util_pp,model,model_bound,flag
+rtl,16_lanes,16,,swp,v2_autovec,0,0,0,0,256,,2306867.0,14.545,45.45,2097152,50.00,-9.1,+4.55,model_autovec_gemm,vlsu,
+rtl,16_lanes,16,,swp,rvv,8,2,128,0,256,,1363149.0,24.615,76.92,1048576,100.00,-23.1,+23.08,"model_rvv_dgemm(mr=8,lmul=2,kc=128,p=0)",fpu,model_ceiling
+rtl,4_lanes,4,,swp,v0_scalar,0,0,0,0,128,,4529848.0,0.926,11.57,4194304,12.50,-7.4,+0.93,model_scalar_gemm,scalar-issue,
+rtl,4_lanes,4,,swp,v2_autovec,0,0,0,0,256,,10066330.0,3.333,41.67,8388608,50.00,-16.7,+8.33,model_autovec_gemm,vlsu,
+rtl,4_lanes,4,,swp,rvv,8,2,128,0,256,,2726298.0,12.308,153.85,4194304,100.00,+53.8,-53.85,"model_rvv_dgemm(mr=8,lmul=2,kc=128,p=0)",fpu,big_err
+rtl,4_lanes,4,,lp,linpack,8,2,128,0,512,64,20334192.0,4.426,55.33,17681906,63.63,-13.0,+8.30,model_linpack(nb=64),,
+rtl,4_lanes,4,,lp,linpack,4,1,64,0,512,32,18882560.0,4.766,59.58,15106048,74.48,-20.0,+14.90,model_linpack(nb=32),,
+e7,,4,clang-O3-fast-vec,swp,v2_autovec,0,0,0,0,256,,9898557.0,3.390,42.37,8388608,50.00,-15.3,+7.63,model_autovec_gemm,vlsu,
+e7,,4,clang-O3-novec,swp,v2_autovec,0,0,0,0,256,,31876710.0,1.053,13.16,33554432,12.50,+5.3,-0.66,model_scalar_gemm(approx: blocked-scalar),scalar-issue,approx
+e7,,4,gcc-O3-fast-vec,swp,rvv,8,2,128,0,256,,3774874.0,8.889,111.11,4194304,100.00,+11.1,-11.11,"model_rvv_dgemm(mr=8,lmul=2,kc=128,p=0)",fpu,

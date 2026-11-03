@@ -1,0 +1,11 @@
+source,var,lanes,N,nb,tag,f,expected_err_pct,model_util
+rtl,v0_scalar,4,128,,,0.08,-7.407,12.50
+rtl,v2_autovec,4,256,,,0.2,-16.667,50.00
+rtl,rvv,4,256,,,-0.35,53.846,100.00
+rtl,linpack,4,512,64,,0.15,-13.043,63.63
+rtl,linpack,4,512,32,,0.25,-20.000,74.48
+rtl,v2_autovec,16,256,,,0.1,-9.091,50.00
+rtl,rvv,16,256,,,0.3,-23.077,100.00
+e7,v2_autovec,4,256,,clang-O3-fast-vec,0.18,-15.254,50.00
+e7,v2_autovec,4,256,,clang-O3-novec,-0.05,5.263,12.50
+e7,rvv,4,256,,gcc-O3-fast-vec,-0.1,11.111,100.00

@@ -1,0 +1,8 @@
+config,lanes,app,s,N,cycles,fpcyc,util,verified
+16_lanes,16,fmatmul,4,4,129,0.99,3.1,yes
+16_lanes,16,fmatmul,8,8,516,1.98,6.2,yes
+16_lanes,16,fmatmul,16,16,2048,4.00,12.5,yes
+16_lanes,16,fmatmul,32,32,2922,22.43,70.1,yes
+16_lanes,16,fmatmul,64,64,18555,28.26,88.3,yes
+4_lanes,4,fmatmul,32,32,37236,1.76,22.0,yes
+4_lanes,4,fmatmul,64,64,214872,2.44,30.5,yes

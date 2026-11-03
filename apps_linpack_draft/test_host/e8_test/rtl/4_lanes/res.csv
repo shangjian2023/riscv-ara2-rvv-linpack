@@ -1,0 +1,6 @@
+CFG,lanes=4,vlen=4096,sweepN=256,linpackN=512,nbMax=64,reps=1
+RES,phase=swp,var=v0_scalar,mr=0,lmul=0,kc=0,pipe=0,N=128,cycles=4529848,fpcyc=0.926,util=11.57,chk=0123456789abcdef
+RES,phase=swp,var=v2_autovec,mr=0,lmul=0,kc=0,pipe=0,N=256,cycles=10066330,fpcyc=3.333,util=41.67,chk=0123456789abcdef
+RES,phase=swp,var=rvv,mr=8,lmul=2,kc=128,pipe=0,N=256,cycles=2726298,fpcyc=12.308,util=153.85,chk=0123456789abcdef
+RES,phase=lp,var=linpack,mr=8,lmul=2,kc=128,pipe=0,N=512,nb=64,cycles=20334192,fpcyc=4.426,util=55.33,chk=0123456789abcdef
+RES,phase=lp,var=linpack,mr=4,lmul=1,kc=64,pipe=0,N=512,nb=32,cycles=18882560,fpcyc=4.766,util=59.58,chk=0123456789abcdef

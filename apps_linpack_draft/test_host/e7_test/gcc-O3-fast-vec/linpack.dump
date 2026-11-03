@@ -1,0 +1,14 @@
+00000000000104a4 <dgemm_naive>:
+  104a4:	6b05			fld	fa0,-16(sp)
+00000000000110b0 <dgemm_blocked>:
+  110b0:	0a87d42f		vsetvli	t1,a2,e64
+  110b4:	02d76557		vle64.v	v8,(a1)
+  110b8:	b2a552d7		vfmacc.vf	v16,fa5,v8
+0000000000013800 <dgemm_mr8_m2_p0>:
+  13800:	0a87d42f		vsetvli	t1,a2,e64,m2
+  13804:	02d76557		vle64.v	v8,(a1)
+  13808:	02a05ae3		sd	s0,16(sp)
+  1380c:	6b05			fld	fa0,-16(sp)
+  13810:	02a05ae3		sd	s1,24(sp)
+  13814:	6b05			fld	fa1,-24(sp)
+  13818:	b2a552d7		vfmacc.vf	v16,fa5,v8

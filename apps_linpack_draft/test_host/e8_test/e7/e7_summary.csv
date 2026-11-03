@@ -1,0 +1,4 @@
+tag,lanes,phase,var,mr,lmul,kc,pipe,N,cycles,fpcyc,util,chk
+clang-O3-fast-vec,4,swp,v2_autovec,0,0,0,0,256,9898557,3.390,42.37,deadbeef
+clang-O3-novec,4,swp,v2_autovec,0,0,0,0,256,31876710,1.053,13.16,deadbeef
+gcc-O3-fast-vec,4,swp,rvv,8,2,128,0,256,3774874,8.889,111.11,deadbeef
