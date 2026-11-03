@@ -1,0 +1,5 @@
+reference |C|_inf=4.245, elems=9216, vlmax_e64m1=2
+done
+kernel,max_rel_err,vs_fp64_time
+f16_direct,1.429e+00,0.021
+f16_split2,1.703e-04,0.067

@@ -1,0 +1,5 @@
+binary,function,vfmacc,vfmul_v,vec_load,vec_store,fma_per_memvec
+base,dgemm_naive,1,0,2,1,0.33
+advised,dgemm_naive,7,0,14,7,0.33
+base,dgemm_blocked,1,0,2,1,0.33
+advised,dgemm_blocked,7,0,14,7,0.33

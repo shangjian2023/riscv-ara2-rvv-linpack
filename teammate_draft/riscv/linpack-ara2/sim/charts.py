@@ -178,6 +178,71 @@ def f6_sizes():
     fig.savefig(os.path.join(RES, "f6_sizes.png"), dpi=150)
 
 
+def f7_compiler():
+    """双编译器对比：自动向量化证据（GCC 13 全部失败 vs Clang 18 成功）"""
+    fig, axes = plt.subplots(1, 2, figsize=(9, 4.0))
+    ax = axes[0]
+    fns = ["dgemm_naive", "dgemm_blocked"]
+    gcc_v = [0, 0]
+    clang_v = [6, 6]
+    x = range(2)
+    ax.bar([i - 0.17 for i in x], gcc_v, 0.34, label="GCC 13.3", color=C_SCALAR)
+    ax.bar([i + 0.17 for i in x], clang_v, 0.34, label="Clang 18.1", color=C_VEC)
+    ax.set_xticks(x)
+    ax.set_xticklabels(["朴素 ijk", "分块+自动向量化"])
+    ax.set_ylabel("函数内向量指令数（条）")
+    ax.set_title("(a) 自动向量化：GCC 全失败 / Clang 成功")
+    ax.legend()
+    ax.grid(alpha=0.3, axis="y")
+
+    ax = axes[1]
+    fns2 = ["mr8_m2_p0", "mr8_m2_p1", "mr16_m2_p0"]
+    gv = [34, 44, 75]
+    cv = [53, 64, 103]
+    x = range(3)
+    ax.bar([i - 0.17 for i in x], gv, 0.34, label="GCC 13.3", color=C_SCALAR)
+    ax.bar([i + 0.17 for i in x], cv, 0.34, label="Clang 18.1", color=C_VEC)
+    ax.set_xticks(x)
+    ax.set_xticklabels(fns2, fontsize=9)
+    ax.set_ylabel("静态向量指令数（条）")
+    ax.set_title("(b) 手写内核：两编译器均正确，代码形态不同")
+    ax.legend()
+    ax.grid(alpha=0.3, axis="y")
+    fig.suptitle("图7  双编译器 RVV 后端对比（数据来源：llvm-objdump 静态统计）")
+    fig.tight_layout()
+    fig.savefig(os.path.join(RES, "f7_compiler.png"), dpi=150)
+
+
+def f8_precision():
+    """低精度误差-吞吐权衡（Ozaki-lite split-FP16）"""
+    rows = read("e10_precision.csv")
+    sel = [r for r in rows if int(r["lanes"]) == 16]
+    fig, ax1 = plt.subplots(figsize=(8, 4.2))
+    names = [r["格式"] for r in sel]
+    gf = [float(r["该格式有效GFLOPS"]) for r in sel]
+    err = [float(r["归一化误差(实测)"]) for r in sel]
+    colors = [C_VEC, C_WARN, C_AUTO]
+    bars = ax1.bar(names, gf, color=colors, width=0.5)
+    for b, v in zip(bars, gf):
+        ax1.text(b.get_x() + b.get_width() / 2, v + 2, f"{v:.1f}", ha="center",
+                 fontsize=10)
+    ax1.set_ylabel("有效 GFLOPS @1.08GHz（16-lane）")
+    ax1.set_ylim(0, 160)
+    ax2 = ax1.twinx()
+    ax2.plot(names, [max(e, 1e-8) for e in err], "ko--", markersize=7)
+    for i, e in enumerate(err):
+        ax2.annotate(f"{e:.0e}", (i, max(e, 1e-8)),
+                     textcoords="offset points", xytext=(18, 6), fontsize=9)
+    ax2.set_ylabel("归一化误差（实测）")
+    ax2.set_yscale("log")
+    ax2.set_ylim(1e-8, 1e-2)
+    ax1.set_title("图8  低精度误差-吞吐权衡：split2 恢复精度的同时保留 1.33x 吞吐\n"
+                  "（吞吐：Ara2 模型；精度：x86/RVV 实测）")
+    fig.tight_layout()
+    fig.savefig(os.path.join(RES, "f8_precision.png"), dpi=150)
+
+
 if __name__ == "__main__":
     f1_variants(); f2_lanes(); f3_lmul_mr(); f4_multicore(); f5_linpack(); f6_sizes()
+    f7_compiler(); f8_precision()
     print("CHARTS DONE ->", os.path.abspath(RES))

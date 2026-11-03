@@ -1,0 +1,12 @@
+src/dgemm_naive.c:26:28: missed: couldn't vectorize loop
+src/dgemm_naive.c:26:28: missed: not vectorized: multiple nested loops.
+src/dgemm_naive.c:28:32: missed: couldn't vectorize loop
+src/dgemm_naive.c:28:32: missed: not vectorized: multiple nested loops.
+src/dgemm_naive.c:30:36: missed: couldn't vectorize loop
+src/dgemm_naive.c:30:36: missed: not vectorized: multiple nested loops.
+src/dgemm_naive.c:32:39: missed: couldn't vectorize loop
+src/dgemm_naive.c:32:39: missed: not vectorized: multiple nested loops.
+src/dgemm_naive.c:33:43: missed: couldn't vectorize loop
+src/dgemm_naive.c:34:32: missed: not vectorized: no vectype for stmt: aa_42 = *_7;
+src/dgemm_naive.c:35:47: missed: couldn't vectorize loop
+src/dgemm_naive.c:36:30: missed: not vectorized: no vectype for stmt: _12 = *_11;

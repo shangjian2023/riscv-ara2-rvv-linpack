@@ -104,13 +104,14 @@ def model_rvv_dgemm(n: int, m: int, k: int, kp: KernelParams, mc: Ara2Config,
 
     # ---- 每 k 步的指令流（与反汇编对齐）----
     vec_per_k = 1 + kp.mr + (1 if kp.pipe else 0)   # B load + MR vfmacc + (vmv)
-    vec_per_k += 2.0 * kp.mr / kp.kc                # C 面板 load/store 摊销
+    vec_per_k += 2.0 * kp.mr / min(kp.kc, k)        # C 面板 load/store 摊销
     scalar_per_k = 3.0 / kp.k_unroll + kp.mr        # A 面板标量取数 fld + 地址/分支
 
     issue_per_k = vec_per_k * mc.issue_interval + scalar_per_k
     fma_per_k = kp.mr * avg_lane_time
+    kc_eff = min(kp.kc, k)                    # 实际面板深度（k 尾块摊销）
     vlsu_per_k = (8 * avg_vl) / (mc.vlsu_bytes_per_lane * L) \
-        + (2 * kp.mr * avg_vl * 8 / (mc.vlsu_bytes_per_lane * L)) / kp.kc
+        + (2 * kp.mr * avg_vl * 8 / (mc.vlsu_bytes_per_lane * L)) / kc_eff
 
     steady = max(issue_per_k, fma_per_k, vlsu_per_k)
 
