@@ -61,11 +61,27 @@ int dgemm_rvv_current_kc(void)   { return g_kc; }
 #define UNROLL(N, S, L, R) CAT2(STMTS_, N)(S, L, R)
 
 // accumulator statement generators (runtime vars resolved at expansion site)
+// INSTR_COUNT builds add semantic instruction counters for model validation.
+#ifdef INSTR_COUNT
+extern unsigned long long g_ic_vec_load, g_ic_vec_store, g_ic_vec_fma,
+    g_ic_vec_move, g_ic_scalar_load;
+#define IC_LOAD() (g_ic_vec_load++)
+#define IC_STORE() (g_ic_vec_store++)
+#define IC_FMA() (g_ic_vec_fma++)
+#define IC_MOVE() (g_ic_vec_move++)
+#define IC_SCALAR(n) (g_ic_scalar_load += (n))
+#else
+#define IC_LOAD() ((void)0)
+#define IC_STORE() ((void)0)
+#define IC_FMA() ((void)0)
+#define IC_MOVE() ((void)0)
+#define IC_SCALAR(n) ((void)0)
+#endif
 #define DECL_ACC(L, R, i)   VTT(L) CAT2(creg, i);
-#define LOAD_ACC(L, R, i)   CAT2(creg, i) = VLE64(L)(&c[(i0 + i) * ldc + j0], vl);
-#define FMACC_ACC(L, R, i)  CAT2(creg, i) = VFMACC(L)(CAT2(creg, i), at[kk * R + i], vb, vl);
-#define FMACC_LAST(L, R, i) CAT2(creg, i) = VFMACC(L)(CAT2(creg, i), at[(kcq - 1) * R + i], vb, vl);
-#define STORE_ACC(L, R, i)  VSE64(L)(&c[(i0 + i) * ldc + j0], CAT2(creg, i), vl);
+#define LOAD_ACC(L, R, i)   { IC_LOAD(); CAT2(creg, i) = VLE64(L)(&c[(i0 + i) * ldc + j0], vl); }
+#define FMACC_ACC(L, R, i)  { IC_FMA(); CAT2(creg, i) = VFMACC(L)(CAT2(creg, i), at[kk * R + i], vb, vl); }
+#define FMACC_LAST(L, R, i) { IC_FMA(); CAT2(creg, i) = VFMACC(L)(CAT2(creg, i), at[(kcq - 1) * R + i], vb, vl); }
+#define STORE_ACC(L, R, i)  { IC_STORE(); VSE64(L)(&c[(i0 + i) * ldc + j0], CAT2(creg, i), vl); }
 
 // Generate one full DGEMM driver for a fixed (MR, LM, PIPE) point.
 #define MAKE_DGEMM(MR, LM, PIPE)                                                            \
@@ -85,17 +101,22 @@ int dgemm_rvv_current_kc(void)   { return g_kc; }
                             at[kk * MR + i] = a[(i0 + i) * lda + k0 + kk];                  \
                     UNROLL(MR, DECL_ACC, LM, MR)                                            \
                     UNROLL(MR, LOAD_ACC, LM, MR)                                            \
+                    IC_SCALAR(kcq * MR);                                                    \
                     const double *bp = &b[k0 * ldb + j0];                                   \
                     if (PIPE) {                                                             \
+                        IC_LOAD();                                                          \
                         VTT(LM) vb = VLE64(LM)(bp, vl);                                     \
                         for (size_t kk = 0; kk + 1 < kcq; kk++) {                           \
+                            IC_LOAD();                                                      \
                             VTT(LM) vbn = VLE64(LM)(bp + (kk + 1) * ldb, vl);               \
                             UNROLL(MR, FMACC_ACC, LM, MR)                                   \
+                            IC_MOVE();                                                      \
                             vb = vbn;                                                       \
                         }                                                                   \
                         if (kcq > 0) UNROLL(MR, FMACC_LAST, LM, MR)                         \
                     } else {                                                                \
                         for (size_t kk = 0; kk < kcq; kk++) {                               \
+                            IC_LOAD();                                                      \
                             VTT(LM) vb = VLE64(LM)(bp + kk * ldb, vl);                      \
                             UNROLL(MR, FMACC_ACC, LM, MR)                                   \
                         }                                                                   \
@@ -105,10 +126,15 @@ int dgemm_rvv_current_kc(void)   { return g_kc; }
                 for (size_t i0 = n - (n % MR); i0 < n; i0++) { /* i-tail rows */            \
                     double *at = at_panel;                                                  \
                     for (size_t kk = 0; kk < kcq; kk++) at[kk] = a[i0 * lda + k0 + kk];     \
+                    IC_SCALAR(kcq);                                                         \
+                    IC_LOAD();                                                              \
                     VTT(LM) c0 = VLE64(LM)(&c[i0 * ldc + j0], vl);                          \
                     const double *bp = &b[k0 * ldb + j0];                                   \
-                    for (size_t kk = 0; kk < kcq; kk++)                                     \
+                    for (size_t kk = 0; kk < kcq; kk++) {                                   \
+                        IC_LOAD(); IC_FMA();                                                \
                         c0 = VFMACC(LM)(c0, at[kk], VLE64(LM)(bp + kk * ldb, vl), vl);      \
+                    }                                                                       \
+                    IC_STORE();                                                             \
                     VSE64(LM)(&c[i0 * ldc + j0], c0, vl);                                   \
                 }                                                                           \
             }                                                                               \

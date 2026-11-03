@@ -11,3 +11,6 @@ Thumbs.db
 .DS_Store
 # Upstream Ara clone (re-clone from pulp-platform/ara; see rtl_experiment_plan.md)
 teammate_draft/riscv/work/reference/ara/
+
+# linpack-ara2 build artifacts (rebuildable via scripts/)
+teammate_draft/riscv/linpack-ara2/build/
