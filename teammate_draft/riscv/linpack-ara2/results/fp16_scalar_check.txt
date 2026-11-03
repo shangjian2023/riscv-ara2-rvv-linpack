@@ -1,0 +1,4 @@
+N=96 M=96 K=128, |C|_inf=3.5961
+fp16 direct  norm-rel err = 2.674e-04  (~2^-11 = 4.9e-04 expected)
+fp16 split2  norm-rel err = 3.647e-07  (~fp32 accumulation level expected)
+SPLIT2 ACCURACY PASS

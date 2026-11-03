@@ -1,0 +1,2 @@
+src/dgemm_naive.c:14:13: remark: vectorized loop (vectorization width: vscale x 2, interleaved count: 1) [-Rpass=loop-vectorize]
+src/dgemm_naive.c:35:25: remark: vectorized loop (vectorization width: vscale x 2, interleaved count: 1) [-Rpass=loop-vectorize]

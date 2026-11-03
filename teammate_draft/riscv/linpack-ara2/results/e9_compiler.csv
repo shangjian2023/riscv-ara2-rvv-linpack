@@ -1,0 +1,6 @@
+function,gcc13_vec_instrs,clang18_vec_instrs
+dgemm_naive,0,6
+dgemm_blocked,0,6
+dgemm_mr8_m2_p0,34,53
+dgemm_mr8_m2_p1,44,64
+dgemm_mr16_m2_p0,75,103

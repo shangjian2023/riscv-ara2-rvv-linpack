@@ -1,0 +1,5 @@
+config,vlmax,vec_fma,vec_load,vec_store,vec_move,scalar_load
+mr4_m1_kc64_p0,4,122880,32640,1920,0,122880
+mr8_m2_kc64_p0,4,61440,8640,960,0,61440
+mr4_m2_kc32_p0,4,61440,17280,1920,0,61440
+mr8_m2_kc64_p1,4,61440,8640,960,7560,61440
