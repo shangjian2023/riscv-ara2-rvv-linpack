@@ -63,6 +63,18 @@ verilate_cfg() { # $1=config - force via touch (timestamps alone never trigger)
   make -C "$HW_DIR" verilate config="$1" > "$OUT/$1/verilate.log" 2>&1
 }
 
+app_clean() {
+  # MANDATORY before every build: make only compares timestamps, not flags -
+  # objects compiled with a previous config's -DNR_LANES/-Ddefines would be
+  # silently relinked into the new config's binary (data mislabeled!).
+  rm -f "$APP_DIR"/bin/linpack "$APP_DIR"/bin/fmatmul
+  find "$APP_DIR/linpack" "$APP_DIR/fmatmul" -name '*.o' -delete 2>/dev/null || true
+  rm -f "$APP_DIR/common/"*-gcc.o "$APP_DIR/common/"*-llvm.o \
+        "$APP_DIR/common/link.ld" \
+        "$APP_DIR/linpack/data.S" "$APP_DIR/linpack/data.S.o" \
+        "$APP_DIR/fmatmul/data.S" "$APP_DIR/fmatmul/data.S.o" 2>/dev/null || true
+}
+
 run_sim() { # $1=app $2=log  (NEVER kill: buffered UART dies with the process)
   (cd "$HW_DIR" && ./build/verilator/Vara_tb_verilator +notrace \
      -l "ram,$APP_DIR/bin/$1,elf") > "$2" 2>&1
@@ -73,6 +85,7 @@ CFG=4_lanes; L=4; V=4096; dir="$OUT/$CFG"; mkdir -p "$dir"
 echo ""; echo "==== [$CFG] chain completion ===="
 verilate_cfg "$CFG" || { echo "verilate failed"; exit 1; }
 echo "[E1] building trimmed linpack ..."
+app_clean
 build_linpack $L $V > "$dir/linpack_trim_build.log" 2>&1 \
   || { echo "BUILD FAILED (see $dir/linpack_trim_build.log)"; exit 1; }
 echo "[E1] running trimmed linpack on RTL (~1-1.5h) ..."
@@ -90,6 +103,7 @@ verilate_cfg "$CFG" || { echo "verilate failed"; exit 1; }
 for TRIPLE in "32 32 32" "64 64 64"; do
   A="${TRIPLE%% *}"
   echo "[E0] fmatmul $A ..."
+  app_clean
   build_fmatmul $L $V "$TRIPLE" > "$dir/fmatmul_build_$A.log" 2>&1 \
     || { echo "  BUILD FAILED"; continue; }
   run_sim fmatmul "$dir/fmatmul_$A.log" || { echo "  SIM FAILED"; continue; }
@@ -115,6 +129,7 @@ PY
 done
 
 echo "[E1] building trimmed linpack @16 ..."
+app_clean
 build_linpack $L $V > "$dir/linpack_trim_build.log" 2>&1 \
   || { echo "BUILD FAILED"; exit 1; }
 echo "[E1] running trimmed linpack @16 on RTL (~2-4h) ..."

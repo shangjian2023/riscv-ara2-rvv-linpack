@@ -48,8 +48,10 @@
 #define LINPACK_MAX_N ((LINPACK_N > DGEMM_SWEEP_N) ? LINPACK_N : DGEMM_SWEEP_N)
 #endif
 // check_phase uses odd sizes 131x126x117, so the sweep buffers must cover it.
-#if DGEMM_SWEEP_N < 132
-#error "DGEMM_SWEEP_N must be >= 132 (check_phase uses 131x126x117 operands)"
+// (Not required when SKIP_CHECK drops the functional phase entirely - trimmed
+// RTL runs use e.g. -DSKIP_CHECK=1 -DDGEMM_SWEEP_N=64.)
+#if DGEMM_SWEEP_N < 132 && !(defined(SKIP_CHECK) && SKIP_CHECK)
+#error "DGEMM_SWEEP_N must be >= 132 (check_phase uses 131x126x117 operands; or pass -DSKIP_CHECK=1)"
 #endif
 
 // Repetitions for the timing sweep (RTL sim is expensive; default 1).

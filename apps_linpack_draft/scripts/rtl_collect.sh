@@ -91,6 +91,14 @@ rtl_gcc_flags() { # $1 = extra defines
 # build_app <app> <defines> [extra make args...]
 build_app() {
   local app="$1" defs="$2"; shift 2
+  # Clean first: make compares timestamps only, not flags - objects from a
+  # previous config/defines set would be silently relinked into this build
+  # (e.g. -DNR_LANES=4 objects inside a 16_lanes binary => mislabeled data).
+  rm -f "$APP_DIR/bin/$app"
+  find "$APP_DIR/$app" -name '*.o' -delete 2>/dev/null || true
+  rm -f "$APP_DIR/common/"*-gcc.o "$APP_DIR/common/"*-llvm.o \
+        "$APP_DIR/common/link.ld" \
+        "$APP_DIR/$app/data.S" "$APP_DIR/$app/data.S.o" 2>/dev/null || true
   if [ "$RTLC_COMPILER" = clang ]; then
     make -C "$APP_DIR" "bin/$app" ENV_DEFINES="$defs" "$@"
   else
