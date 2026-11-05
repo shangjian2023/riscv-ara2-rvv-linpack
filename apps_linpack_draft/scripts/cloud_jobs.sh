@@ -42,8 +42,12 @@ $XPACK/bin/riscv-none-elf-gcc --version | head -1 || { echo "FATAL: xpack gcc"; 
 # --- build helpers (validated GCC recipe; see rtl_collect.sh notes) ----------
 SHIM=/root/work/shim-include
 gcc_flags() { # lanes vlen extra-defines
+  # -I paths ABSOLUTE: these flags are used both under `make -C $APP` (cwd =
+  # apps, relative would work) and by fast_link's direct gcc calls (cwd is
+  # wherever the driver was started from - relative -Icommon would miss
+  # runtime.h and fail every variant link).
   echo "-O2 -g -mcmodel=medany -march=rv64gcv -mabi=lp64d -ffreestanding \
--Icommon -I$SHIM -static -fno-common -fno-builtin-printf \
+-I$APP/common -I$SHIM -static -fno-common -fno-builtin-printf \
 -ffunction-sections -fdata-sections -DNR_LANES=$1 -DVLEN=$2 $3"
 }
 RUNTIME="common/crt0-gcc.S.o common/printf-gcc.c.o common/string-gcc.c.o common/serial-gcc.c.o common/util-gcc.c.o"
@@ -84,14 +88,17 @@ fast_link() {
   local name=$1 L=$2 V=$3 defs=$4
   flock 9
   local f="$(gcc_flags "$L" "$V" "$defs") -std=gnu99"
-  local objs=""
+  local objs="" rt="" o
   for o in $(find "$APP/linpack" -name '*.o' | sort); do
     case "$o" in */main.c.o) ;; *) objs="$objs $o" ;; esac
   done
+  # RUNTIME is a space-separated list: prefix each word (quoting the whole
+  # expansion would pass it to the linker as ONE giant path with spaces).
+  for o in $RUNTIME; do rt="$rt $APP/$o"; done
   $XPACK/bin/riscv-none-elf-gcc -I"$APP/include" $f -c "$APP/linpack/main.c" \
       -o "$EL/tmp.main.o" \
    && $XPACK/bin/riscv-none-elf-gcc -I"$APP/include" $f -o "$EL/$name.elf" \
-        "$EL/tmp.main.o" $objs "$APP/$RUNTIME" $LDFLAGS
+        "$EL/tmp.main.o" $objs $rt $LDFLAGS
   local rc=$?
   flock -u 9
   return $rc
@@ -130,17 +137,18 @@ for CFG in $CONFIGS; do
     && cp "$APP/bin/linpack" "$EL/e1_${CFG}.elf" \
     && echo "e1_$CFG|$CFG|$EL/e1_$CFG.elf" >> "$JOBS" \
     || { echo "[W] e1 $CFG build failed"; continue; }
-  # E3: object cache from a full -DSKIP_CHAIN build, then 26 fast variants
-  make_build linpack "$L" "$V" "$E3_DEFS" || { echo "[W] e3 cache $CFG failed"; continue; }
-  cp "$APP/bin/linpack" "$EL/e3base_${CFG}.elf"   # v0/v2 fallback point
+  # E3: one make_build per variant. (An object-cache fast-link scheme was
+  # tried and abandoned: the apps Makefile `rm`s every intermediate .o after
+  # linking, so nothing persists to relink against - see git history.)
   for PIPE in 0 1; do
     for MR in 2 4 8 16; do
       for LMUL in 1 2 4 8; do
         case $MR in 2|4) ;; 8) [ $LMUL -le 4 ] || continue ;; 16) [ $LMUL -le 2 ] || continue ;; esac
         N="e3_${CFG}_mr${MR}m${LMUL}p${PIPE}"
-        fast_link "$N" "$L" "$V" "-DSKIP_CHECK=1 -DDGEMM_SWEEP_N=256 -DONLY_MR=$MR -DONLY_LMUL=$LMUL -DONLY_PIPE=$PIPE" \
+        make_build linpack "$L" "$V" "-DSKIP_CHECK=1 -DDGEMM_SWEEP_N=256 -DONLY_MR=$MR -DONLY_LMUL=$LMUL -DONLY_PIPE=$PIPE" \
+          && cp "$APP/bin/linpack" "$EL/$N.elf" \
           && echo "$N|$CFG|$EL/$N.elf" >> "$JOBS" \
-          || echo "[W] $N link failed"
+          || echo "[W] $N build failed"
       done
     done
   done
