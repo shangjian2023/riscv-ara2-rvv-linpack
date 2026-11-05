@@ -34,9 +34,18 @@ while IFS='|' read -r NAME CFG ELF; do
   [ -n "${NAME:-}" ] || continue
   case "$NAME" in *_16_lanes*) OUT=$OUT_16 ;; *) OUT=$OUT_A ;; esac
   LOG=$OUT/$NAME/sim.log
-  if [ -f "$LOG" ] && grep -q 'Simulation statistics' "$LOG" 2>/dev/null; then
-    echo "[done] $NAME"
-    continue
+  # A salvaged E3 log is complete for our purposes once its DGEMM RES row
+  # exists, even if SIGINT ended the accidentally-included Linpack chain
+  # before Verilator printed final simulation statistics.
+  if [ -f "$LOG" ]; then
+    case "$NAME" in
+      e3_*) grep -q '^RES,phase=swp' "$LOG" 2>/dev/null ;;
+      *)    grep -q 'Simulation statistics' "$LOG" 2>/dev/null ;;
+    esac
+    if [ $? -eq 0 ]; then
+      echo "[done] $NAME"
+      continue
+    fi
   fi
   # Old runners retain ownership of active jobs. The ELF-only second grep
   # cannot self-match because the first grep requires a literal models/ path.

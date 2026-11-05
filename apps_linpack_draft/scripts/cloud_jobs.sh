@@ -145,7 +145,7 @@ for CFG in $CONFIGS; do
       for LMUL in 1 2 4 8; do
         case $MR in 2|4) ;; 8) [ $LMUL -le 4 ] || continue ;; 16) [ $LMUL -le 2 ] || continue ;; esac
         N="e3_${CFG}_mr${MR}m${LMUL}p${PIPE}"
-        make_build linpack "$L" "$V" "-DSKIP_CHECK=1 -DDGEMM_SWEEP_N=256 -DONLY_MR=$MR -DONLY_LMUL=$LMUL -DONLY_PIPE=$PIPE" \
+        make_build linpack "$L" "$V" "-DSKIP_CHECK=1 -DDGEMM_SWEEP_N=256 -DSKIP_CHAIN=1 -DONLY_MR=$MR -DONLY_LMUL=$LMUL -DONLY_PIPE=$PIPE" \
           && cp "$APP/bin/linpack" "$EL/$N.elf" \
           && echo "$N|$CFG|$EL/$N.elf" >> "$JOBS" \
           || echo "[W] $N build failed"
