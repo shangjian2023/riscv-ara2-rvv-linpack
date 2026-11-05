@@ -149,7 +149,8 @@ static void sweep_phase(void) {
     lp_fill(lp_gb, n * n, 22);
     for (size_t i = 0; i < n * n; i++) lp_gc[i] = 0.0;
 
-    // v0 scalar (capped size)
+    // v0 scalar (capped size); skipped in ONLY_MR (E3 single-variant) mode
+#ifndef ONLY_MR
     {
         int64_t best = -1;
         for (int r = 0; r < SWEEP_REPS; r++) {
@@ -180,8 +181,17 @@ static void sweep_phase(void) {
         g_util = 100.0 * gf_pc / (2.0 * NR_LANES);
         report_row("swp", "v2_autovec", 0, 0, 0, 0, n, best, chk);
     }
+#endif // !ONLY_MR
 
-#ifdef FULL_SWEEP
+#if defined(ONLY_MR)
+    // E3 parallel mode: exactly one hand-written config per process
+    // (-DONLY_MR=8 -DONLY_LMUL=2 -DONLY_PIPE=0, kc fixed 128). v0/v2 and the
+    // linpack chain are skipped so a 26-variant sweep fans out to 26 jobs.
+    {
+        cfg_t c = {ONLY_MR, ONLY_LMUL, 128, ONLY_PIPE};
+        sweep_one("rvv", c, n);
+    }
+#elif defined(FULL_SWEEP)
     for (int pipe = 0; pipe <= 1; pipe++)
         for (int mr = 2; mr <= 16; mr <<= 1)
             for (int lmul = 1; lmul <= 8; lmul <<= 1) {
@@ -259,7 +269,7 @@ int main(void) {
 
     sweep_phase();
 
-#if !defined(ARA_IDEAL_DGEMM_ONLY) && !defined(E7_MODE)
+#if !defined(ARA_IDEAL_DGEMM_ONLY) && !defined(E7_MODE) && !defined(SKIP_CHAIN)
     linpack_phase();
 #endif
 
