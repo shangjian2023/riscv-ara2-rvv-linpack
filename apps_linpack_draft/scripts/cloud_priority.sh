@@ -19,10 +19,11 @@ QUEUE=/root/priority_jobs.txt
 # Priority order: cheap paper anchors, likely-best kernels, full 2-lane sweep,
 # remaining 4-lane anchors, E1 chains, then compiler comparison on 2 lanes.
 # BIG and E7 at 4/8/16 lanes are intentionally omitted. E3 at 8/16 lanes is
-# limited to mr8m2p0/mr8m2p1/mr4m1p0; 4 lanes adds mr2m1p0/mr16m2p0/mr8m4p0.
+# limited to representative points; mr4m4p0 was added after the complete
+# 2-lane sweep identified it as the best configuration (63.86% utilization).
 {
   grep -hE '^e0_' "$JOBS_A" "$JOBS_16"
-  grep -hE '^e3_(2|4|8|16)_lanes_(mr8m2p0|mr8m2p1|mr4m1p0)\|' "$JOBS_A" "$JOBS_16"
+  grep -hE '^e3_(2|4|8|16)_lanes_(mr8m2p0|mr8m2p1|mr4m1p0|mr4m4p0)\|' "$JOBS_A" "$JOBS_16"
   grep -hE '^e3_2_lanes_' "$JOBS_A"
   grep -hE '^e3_4_lanes_(mr2m1p0|mr16m2p0|mr8m4p0)\|' "$JOBS_A"
   grep -hE '^e1_' "$JOBS_A" "$JOBS_16"
