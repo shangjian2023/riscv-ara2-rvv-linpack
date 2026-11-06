@@ -1,0 +1,4 @@
+RES,phase=swp,var=rvv,mr=4,lmul=1,kc=128,pipe=0,N=256,cycles=2504287,fpcyc=13.399,util=41.87,chk=
+RES,phase=swp,var=rvv,mr=4,lmul=4,kc=128,pipe=0,N=256,cycles=2541242,fpcyc=13.204,util=41.26,chk=
+RES,phase=swp,var=rvv,mr=8,lmul=2,kc=128,pipe=0,N=256,cycles=2620838,fpcyc=12.803,util=40.01,chk=
+RES,phase=swp,var=rvv,mr=8,lmul=2,kc=128,pipe=1,N=256,cycles=2631389,fpcyc=12.752,util=39.85,chk=
