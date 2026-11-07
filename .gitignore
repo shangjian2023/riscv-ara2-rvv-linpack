@@ -14,3 +14,10 @@ teammate_draft/riscv/work/reference/ara/
 
 # linpack-ara2 build artifacts (rebuildable via scripts/)
 teammate_draft/riscv/linpack-ara2/build/
+
+# Official HPL architecture builds (upstream sources remain tracked)
+third_party/hpl-2.3/Make.local
+third_party/hpl-2.3/Make.k230
+third_party/hpl-2.3/**/local/
+third_party/hpl-2.3/**/k230/
+hpl/results/*/

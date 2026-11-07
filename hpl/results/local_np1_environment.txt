@@ -1,0 +1,5 @@
+arch=local
+ranks=1
+mpicc=/usr/bin/mpicc.openmpi
+blas_libs=-lblas
+Linux DESKTOP-0E6M91H 6.18.54.1-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Tue Oct  6 19:13:07 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux

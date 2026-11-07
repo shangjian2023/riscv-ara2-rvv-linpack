@@ -4,6 +4,7 @@ from collections import Counter
 import csv
 import math
 from pathlib import Path
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -115,11 +116,38 @@ check(summary["配置空间最优/最差差距"] ==
       f"{float(best['gflops'])/float(worst['gflops']):.1f}×",
       "K230 summary configuration span does not match raw data")
 
+hpl_rows = read_csv(ROOT / "hpl/results/summary.csv")
+check(len(hpl_rows) == 2, f"official HPL summary row count: {len(hpl_rows)} != 2")
+for r in hpl_rows:
+    label = f"HPL {r['platform']} np={r['ranks']}"
+    log = (ROOT / "hpl/results" / r["log"]).read_text(encoding="utf-8")
+    check("HPLinpack 2.3" in log, f"{label}: missing official HPL 2.3 banner")
+    check("1 tests completed and passed residual checks" in log,
+          f"{label}: missing official passed-test count")
+    check("0 tests completed and failed residual checks" in log,
+          f"{label}: missing official zero-failure count")
+    perf = re.search(r"^WR\S+\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+"
+                     r"([0-9.]+)\s+([0-9.eE+-]+)", log, re.MULTILINE)
+    check(perf is not None, f"{label}: missing official performance row")
+    if perf:
+        for value, key in zip(perf.groups()[:4], ("N", "NB", "P", "Q")):
+            check(int(value) == int(r[key]), f"{label}: {key} differs from official log")
+        close(float(r["time_s"]), float(perf.group(5)), 1e-12,
+              f"{label}: time differs from official log")
+        close(float(r["gflops"]), float(perf.group(6)), 1e-12,
+              f"{label}: GFLOPS differs from official log")
+    residual = re.search(r"\)=\s*([0-9.eE+-]+)\s*\.+\s*PASSED", log)
+    check(residual is not None, f"{label}: missing official PASSED residual")
+    if residual:
+        close(float(r["residual"]), float(residual.group(1)), 1e-12,
+              f"{label}: residual differs from official log")
+
 if failures:
     print(f"FAILED: {len(failures)} consistency error(s)")
     for failure in failures:
         print(f"- {failure}")
     sys.exit(1)
-print("PASS: 93 cloud rows, 57 E8 comparisons, and 89 K230 raw rows are consistent")
+print("PASS: 93 cloud rows, 57 E8 comparisons, 89 K230 raw rows, and "
+      f"{len(hpl_rows)} official HPL logs are consistent")
 print(f"K230 best: {best['variant']} kc={best['kc']} = {best['gflops']} GFLOPS")
 print(f"K230 Linpack gains N=128/192/256: {' / '.join(gains)}")
