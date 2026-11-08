@@ -109,17 +109,20 @@ int main(void) {
         {128, 4, 1, 64, 0, "baseline"},
         {128, 8, 2, 128, 0, "tuned"},
         {128, 8, 2, 128, 1, "tuned+pipe"},
+        {128, 2, 8, 128, 0, "mr2m8kc128"},
         {192, 4, 1, 64, 0, "baseline"},
         {192, 8, 2, 128, 0, "tuned"},
         {192, 8, 2, 128, 1, "tuned+pipe"},
+        {192, 2, 8, 128, 0, "mr2m8kc128"},
         {256, 4, 1, 64, 0, "baseline"},
         {256, 8, 2, 128, 0, "tuned"},
         {256, 8, 2, 128, 1, "tuned+pipe"},
+        {256, 2, 8, 128, 0, "mr2m8kc128"},
     };
     for (size_t i = 0; i < sizeof(lp) / sizeof(lp[0]); i++) {
         double res, t;
         double g = linpack_run(lp[i].n, 32, lp[i].mr, lp[i].lmul, lp[i].kc, lp[i].pipe,
-                               seed + 7 * (int)i, &res, &t);
+                               seed + 7 * (int)lp[i].n, &res, &t);
         printf("linpack,%s,%zu,0,0,%zu,%d,%d,%d,%d,%d,%.3e,%.3f,%.4f\n", lp[i].tag,
                lp[i].n, __riscv_vsetvlmax_e64m1(), lp[i].mr, lp[i].lmul, lp[i].kc,
                lp[i].pipe, res < 100.0, res, t * 1e3, g);

@@ -1,0 +1,19 @@
+platform=CanMV-K230 V3.0, XuanTie C908, VLEN=128, one Linux CPU
+os=Buildroot Linux 6.6.36, glibc 2.33
+source=unmodified Netlib HPL 2.3
+mpi=MPICH 4.2.0 static, ch3:sock, --with-pm=no --with-pmi=pmi1
+blas=unmodified OpenBLAS 0.3.34 static, TARGET=RISCV64_ZVL128B, NO_THREADS=1
+blas_source=https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.34/OpenBLAS-0.3.34.tar.gz
+blas_source_sha256=cd7e129868320cc2d033afa920e31202dfe0b8066a5b66661900ccc0f197dfed
+blas_cc=/usr/bin/clang-18 --target=riscv64-linux-gnu --gcc-toolchain=/usr
+hpl_cc=riscv64-linux-gnu-gcc
+hpl_cflags=-O3 -march=rv64gcv -mabi=lp64d -fomit-frame-pointer -funroll-loops -Wall
+linkflags=-static
+ranks=1
+launcher=none; direct single-process execution
+results=N=1000/NB=128: 1.3239 GFLOPS PASSED
+results=N=4096/NB=128: 1.7394 GFLOPS PASSED
+results=N=4096/NB=256: 1.7736 GFLOPS PASSED
+reference_blas_baseline=N=1000/NB=128: 0.20729 GFLOPS PASSED
+same_shape_openblas_gain=1.3239/0.20729 = 6.3857x at N=1000/NB=128
+note=Single-CPU optimized BLAS results; not dual-core or TOP500 peak claims.

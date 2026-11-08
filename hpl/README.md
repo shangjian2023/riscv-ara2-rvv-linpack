@@ -17,17 +17,23 @@ build. The x86_64 runs are workflow checks, not K230 performance claims.
 | local x86_64 | 1 | 1000 | 128 | 1×1 | 0.15 | 4.4380 | 7.94584678e-03 | PASSED |
 | local x86_64 | 2 | 1024 | 128 | 1×2 | 0.10 | 7.1378 | 5.61442609e-03 | PASSED |
 | CanMV-K230 C908, one Linux CPU | 1 | 1000 | 128 | 1×1 | 3.22 | 0.20729 | 6.05923578e-03 | PASSED |
+| CanMV-K230 C908, OpenBLAS ZVL128B | 1 | 1000 | 128 | 1×1 | 0.50 | 1.3239 | 9.77627218e-03 | PASSED |
+| CanMV-K230 C908, OpenBLAS ZVL128B | 1 | 4096 | 128 | 1×1 | 26.35 | 1.7394 | 5.40209953e-03 | PASSED |
+| CanMV-K230 C908, OpenBLAS ZVL128B | 1 | 4096 | 256 | 1×1 | 25.84 | **1.7736** | 5.13885196e-03 | PASSED |
 
 Full outputs are in `results/local_np1_openmpi.log`,
-`results/local_np2_openmpi.log`, and `results/k230_np1_mpich.log`. The K230 log
-ends with the official `1 tests completed and passed residual checks` and
-`0 tests completed and failed residual checks` lines. Its raw serial transcript
-is retained as `results/k230_np1_serial.txt`.
+`results/local_np2_openmpi.log`, `results/k230_np1_mpich.log`, and the three
+`results/k230_np1_openblas*.log` files. Every K230 log ends with the official
+`1 tests completed and passed residual checks` and
+`0 tests completed and failed residual checks` lines. Raw serial transcripts
+are retained alongside the decoded logs.
 
-The current K230 image exposes only `cpu0`; this is a single-rank/single-CPU
-result, not a dual-core measurement. The reference BLAS build establishes an
-official correctness baseline and is not an optimized K230 peak-performance
-claim.
+The current K230 image exposes only `cpu0`; these are single-rank/single-CPU
+results, not dual-core measurements. The reference BLAS row establishes an
+official correctness baseline. At the same N=1000/NB=128 configuration,
+OpenBLAS 0.3.34 with its RVV ZVL128B kernels improves throughput from 0.20729
+to 1.3239 GFLOPS (6.39×). The longer N=4096/NB=256 run reaches 1.7736 GFLOPS;
+none of these results is presented as a TOP500-class or dual-core peak claim.
 
 ## Local build and validation
 
@@ -70,6 +76,12 @@ riscv64-linux-gnu-strip hpl/build/k230/xhpl
 gzip -9 -c hpl/build/k230/xhpl > hpl/build/k230/xhpl.gz
 cp hpl/HPL.single.dat hpl/build/k230/HPL.dat
 ```
+
+For the optimized build, compile OpenBLAS 0.3.34 with
+`TARGET=RISCV64_ZVL128B`, `NO_THREADS=1`, `NO_SHARED=1`, and Clang 18 as
+recorded in PROVENANCE.md, then set `K230_BLAS_LIB` to its `libopenblas.a`.
+Keep the reference and OpenBLAS binaries under distinct names. The recorded
+N=4096 inputs are `HPL.n4096_nb128.dat` and `HPL.n4096_nb256.dat`.
 
 For a CH342 console on COM3, the checked XMODEM script transfers both files,
 removes XMODEM's final-block padding, and compares the board SHA-256 with the

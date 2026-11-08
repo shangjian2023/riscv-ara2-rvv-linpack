@@ -1,0 +1,16 @@
+platform=CanMV-K230 V3.0, XuanTie C908, RVV 1.0, VLEN=128, one Linux CPU
+compiler=riscv64-linux-gnu-gcc
+cflags=-O3 -g -march=rv64gcv -mabi=lp64d -static -fno-math-errno
+packing=PACK_B=1 for binaries containing packb; default build retains historical behavior
+unpacked_fair_binary_sha256=0a4f16fb18c4c4c7abf40060484fe9eacb2ac697738dc6f564647c8ce03f313d
+packed_fair_binary_sha256=86fe14cdf45d838c4ec3e770ded13ae7c36e0a571794c9f0eddd7a6f4a0878ea
+packed_full_binary_sha256=09ecb89f3ab53e06de19bd9387059c3dcc0b84b50cf4f470fb5f2a99181d437d
+unpacked_fair_csv_sha256=25a0b9040336ba52ac7872d62c7d8ce6932c750059d357dfbd89e73efdb547a5
+packed_fair_csv_sha256=977d2be084f1f9b96a2802b7f89d0a01212db3a65c7022d37293741dd3044c86
+packed_full_csv_sha256=9eb5d5d772f8009424e4f110dd8ad5c3a5a2fc49d67f018a31695050384d490b
+packed_full_log_sha256=e1abd86453a03b719fe9617a0ddbe05a5132af43e71e0dba2453604dc129f155
+dgemm_repeats=N=160:15, N=256:13, N=512:9, N=1024:5
+dgemm_correctness=max_abs_diff=0 against scalar reference for every variant and size
+linpack_input=seed depends on N only; all four variants at each N use the same matrix
+linpack_residuals=N=128:4.823e-03, N=192:4.141e-03, N=256:4.237e-03 for every variant
+historical_data=k230_board_vlen2.csv and e12_k230_board.csv are preserved unchanged

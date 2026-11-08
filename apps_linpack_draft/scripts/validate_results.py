@@ -116,10 +116,33 @@ check(summary["配置空间最优/最差差距"] ==
       f"{float(best['gflops'])/float(worst['gflops']):.1f}×",
       "K230 summary configuration span does not match raw data")
 
+for fair_name in ("k230_fair.csv", "k230_fair_packb.csv"):
+    fair = read_csv(K230_DIR / fair_name)
+    check(len(fair) == 248, f"{fair_name}: row count {len(fair)} != 248")
+    check(all(float(r["max_diff"]) == 0.0 for r in fair),
+          f"{fair_name}: DGEMM differs from scalar reference")
+    for n, reps in ((160, 15), (256, 13), (512, 9), (1024, 5)):
+        for variant in ("naive_scalar", "blocked_autovec", "rvv_mr2_m8_p1", "rvv_mr8_m2_p1"):
+            selected = [r for r in fair if r["section"] == "raw" and
+                        r["variant"] == variant and int(r["n"]) == n]
+            check(len(selected) == reps,
+                  f"{fair_name}: {variant} N={n} repeat count != {reps}")
+
+packed = read_csv(K230_DIR / "k230_board_packb_fair.csv")
+check(Counter(r["section"] for r in packed) == {"check": 28, "sweep": 52, "linpack": 12},
+      "B-packed full K230 section counts are not 28/52/12")
+check(all(r["ok"] == "1" for r in packed), "B-packed K230 contains a failed check")
+for n in (128, 192, 256):
+    rows = [r for r in packed if r["section"] == "linpack" and int(r["n"]) == n]
+    check(len(rows) == 4, f"B-packed Linpack N={n}: expected four same-input variants")
+    check(len({r["max_diff"] for r in rows}) == 1,
+          f"B-packed Linpack N={n}: variants did not use the same matrix")
+
 hpl_rows = read_csv(ROOT / "hpl/results/summary.csv")
-check(len(hpl_rows) == 3, f"official HPL summary row count: {len(hpl_rows)} != 3")
+check(len(hpl_rows) == 6, f"official HPL summary row count: {len(hpl_rows)} != 6")
 for r in hpl_rows:
-    label = f"HPL {r['platform']} np={r['ranks']}"
+    label = f"HPL {r['platform']} np={r['ranks']} N={r['N']} NB={r['NB']}"
+    check(r["result"] == "PASSED", f"{label}: summary result is not PASSED")
     log = (ROOT / "hpl/results" / r["log"]).read_text(encoding="utf-8")
     check("HPLinpack 2.3" in log, f"{label}: missing official HPL 2.3 banner")
     check("1 tests completed and passed residual checks" in log,
@@ -147,7 +170,8 @@ if failures:
     for failure in failures:
         print(f"- {failure}")
     sys.exit(1)
-print("PASS: 93 cloud rows, 57 E8 comparisons, 89 K230 raw rows, and "
+print("PASS: 93 cloud rows, 57 E8 comparisons, 89 historical K230 rows, "
+      "496 fair DGEMM rows, 92 B-packed full rows, and "
       f"{len(hpl_rows)} official HPL logs are consistent")
 print(f"K230 best: {best['variant']} kc={best['kc']} = {best['gflops']} GFLOPS")
 print(f"K230 Linpack gains N=128/192/256: {' / '.join(gains)}")

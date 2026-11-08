@@ -2,12 +2,18 @@
 
 同一 `build/bench` 二进制（静态 riscv64gcv，qemu 全量验证过的那份）刷入
 CanMV-K230 V3.0（创乐博，玄铁 C908，RVV 1.0，VLEN=128）实测。
-**结果：28/28 校验全过，残差与 QEMU 逐位一致；板上最优 mr2×m8=1.14 GFLOPS
-（VLEN 自适应规则在 VLEN=128 下的预测，规则获商用硅验证）；较标量 3.38×、
-较 GCC 自动向量化 4.23×；Linpack 调优收益 1.36~1.54×；配置空间跨度 5.1×。**
+**结果：28/28 校验全过，残差与 QEMU 逐位一致；板上最优 mr2×m8=1.14 GFLOPS。
+2026-11-08 新增 B 面板打包与同形状重复测量：160³ 中位数 1.3218 GFLOPS，
+1024³ 从 0.1742 提升至 0.9804 GFLOPS；详见 `../results/k230_packb_summary.md`。**
 
-数据：`../results/k230_board_vlen2.csv`（原始）、`../results/e12_k230_board.csv`（汇总）、
+历史 v2 汇总中的 3.38×/4.23×使用最优 160³ 与 131×126×117 基线，
+属于跨用例比较，不能当作同形状加速比。新的 `k230_fair.csv` 与
+`k230_fair_packb.csv` 对每个 N 使用相同输入并报告重复测量中位数。
+
+历史数据：`../results/k230_board_vlen2.csv`（原始）、`../results/e12_k230_board.csv`（汇总）、
 分析脚本 `../sim/k230_board_analysis.py`。
+新增数据：`k230_fair.csv`、`k230_fair_packb.csv`、`k230_board_packb_fair.csv`，
+分析脚本 `../sim/k230_packb_analysis.py`。
 
 ## 复现流程（Windows + WSL）
 
@@ -30,6 +36,8 @@ CanMV-K230 V3.0（创乐博，玄铁 C908，RVV 1.0，VLEN=128）实测。
 
 - GCC 编译的 blocked_autovec 在板上**慢于** naive_scalar（0.269 vs 0.337 GF）——
   GCC 13 未向量化两个基线（e9 诊断），分块只剩开销，跨平台互证；
-- 最优配置随 VLEN 自适应：Ara2 模型（VLEN=2048~16384）选 mr8×m2，
-  C908（VLEN=128）实测选 mr2×m8——同一套 VLEN 无关二进制 + 自适应规则即可跨核；
+- 历史小矩阵结果中，C908（VLEN=128）优选 mr2×m8；这只是一个与
+  VLEN 选型趋势一致的实测点，不能单凭它宣称通用自适应规则已获验证；
+- B 面板连续打包消除了 2/4/8KB 行跨距导致的缓存组冲突，使大矩阵 RVV
+  性能从不可持续恢复到约 1 GFLOPS，详见新增公平基准；
 - `thead,c900-pmu` 18 个硬件计数器可用（boot log），后续可做 perf 级分析。

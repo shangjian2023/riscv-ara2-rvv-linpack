@@ -43,6 +43,29 @@ Both hashes were independently confirmed on the K230 before execution. The
 board ran one MPI rank directly (no launcher), which is valid for the static
 `ch3:sock` single-process build.
 
+## Optimized RVV BLAS build
+
+The second K230 binary links unmodified OpenBLAS 0.3.34 instead of reference
+BLAS. HPL 2.3 itself remains unmodified.
+
+- Archive: https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.34/OpenBLAS-0.3.34.tar.gz
+- SHA-256: `cd7e129868320cc2d033afa920e31202dfe0b8066a5b66661900ccc0f197dfed`
+- Target: `RISCV64_ZVL128B` (RVV 1.0, 128-bit vectors)
+- Build: single-threaded, static, no LAPACK/LAPACKE
+- C compiler: Clang 18 with `--target=riscv64-linux-gnu --gcc-toolchain=/usr`
+- OpenBLAS license: retained in the upstream `LICENSE` file
+
+The stripped optimized HPL binary and gzip hashes are:
+
+```text
+a96481e9b7f7f1969316fb44e61668215af966c5b3e7122bef97ab8c61bf4bce  xhpl_openblas
+f1c77ac8bfc6ff4f69fa3cd416213d928a977f5a5532ddd15c286f8a77b3bdb1  xhpl_openblas.gz
+```
+
+Both were verified on the board. Official HPL PASSED logs were collected at
+N=1000/NB=128 and N=4096/NB=128,256. The best measured configuration is
+N=4096/NB=256 at 1.7736 GFLOPS with scaled residual 5.13885196e-03.
+
 Acknowledgement required by the upstream license:
 
 > This product includes software developed at the University of Tennessee,

@@ -1,0 +1,17 @@
+RVV environment:
+  vlmax e64m1=2 m2=4 m4=8 m8=16
+[check] dgemm variants on 131x126x117 ...
+[linpack] running ...
+  linpack n=128 baseline     resid=4.823e-03 0.4000 GFLOPS (host 0.004 s)
+  linpack n=128 tuned        resid=4.823e-03 0.4647 GFLOPS (host 0.003 s)
+  linpack n=128 tuned+pipe   resid=4.823e-03 0.4728 GFLOPS (host 0.003 s)
+  linpack n=128 mr2m8kc128   resid=4.823e-03 0.5848 GFLOPS (host 0.002 s)
+  linpack n=192 baseline     resid=4.141e-03 0.4299 GFLOPS (host 0.011 s)
+  linpack n=192 tuned        resid=4.141e-03 0.5350 GFLOPS (host 0.009 s)
+  linpack n=192 tuned+pipe   resid=4.141e-03 0.5623 GFLOPS (host 0.009 s)
+  linpack n=192 mr2m8kc128   resid=4.141e-03 0.6413 GFLOPS (host 0.007 s)
+  linpack n=256 baseline     resid=4.237e-03 0.3421 GFLOPS (host 0.033 s)
+  linpack n=256 tuned        resid=4.237e-03 0.4281 GFLOPS (host 0.026 s)
+  linpack n=256 tuned+pipe   resid=4.237e-03 0.4213 GFLOPS (host 0.027 s)
+  linpack n=256 mr2m8kc128   resid=4.237e-03 0.5127 GFLOPS (host 0.022 s)
+done.

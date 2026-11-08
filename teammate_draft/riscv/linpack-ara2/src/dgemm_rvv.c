@@ -6,6 +6,8 @@
 //    the VLSU bandwidth (4L B/cyc) to the FP64 FMA rate (2L FLOP/cyc).
 //  * A-panel packing: At[kk][i] contiguous -> scalar unit-stride loads issued
 //    by CVA6, keeping the vector load/store unit free for B streams.
+//  * Optional B-panel packing (PACK_B=1): contiguous panels avoid cache-set
+//    aliasing for power-of-two leading dimensions and are reused across i0.
 //  * B streams unit-stride along j -> full VLSU burst bandwidth.
 //  * Optional software pipelining (PIPE=1): prefetch B(k+1) before the MR-long
 //    FMA chain of step k, hiding the memory latency behind FMA work.
@@ -23,7 +25,25 @@
 
 #define KC_MAX 256
 #define MR_MAX 16
+#define VLMAX_CAP 2048 /* 16-lane Ara2, LMUL=8, FP64 */
 static double at_panel[KC_MAX * MR_MAX] __attribute__((aligned(64)));
+#ifdef PACK_B
+// Power-of-two leading dimensions otherwise make every B row alias into the
+// same cache sets. Pack each (j0,k0) panel once and reuse it across all i0.
+static double bt_panel[KC_MAX * VLMAX_CAP] __attribute__((aligned(64)));
+#define PACK_B_PANEL(LM)                                                              \
+    do {                                                                              \
+        for (size_t pkk = 0; pkk < kcq; pkk++) {                                      \
+            IC_LOAD(); IC_STORE();                                                    \
+            VTT(LM) pvb = VLE64(LM)(&b[(k0 + pkk) * ldb + j0], vl);                  \
+            VSE64(LM)(bt_panel + pkk * vlmax, pvb, vl);                               \
+        }                                                                             \
+    } while (0)
+#define LOAD_B_PANEL(LM, bp, kk, vl) ((void)(bp), VLE64(LM)(bt_panel + (kk) * vlmax, vl))
+#else
+#define PACK_B_PANEL(LM) ((void)0)
+#define LOAD_B_PANEL(LM, bp, kk, vl) VLE64(LM)((bp) + (kk) * ldb, vl)
+#endif
 
 static int g_mr = 4, g_lmul = 1, g_kc = 128, g_pipe = 0;
 
@@ -94,6 +114,7 @@ extern unsigned long long g_ic_vec_load, g_ic_vec_store, g_ic_vec_fma,
             const size_t vl = VSETVL(LM)(m - j0);                                           \
             for (size_t k0 = 0; k0 < k; k0 += kc) {                                         \
                 const size_t kcq = k - k0 < kc ? k - k0 : kc;                               \
+                PACK_B_PANEL(LM);                                                           \
                 for (size_t i0 = 0; i0 + MR <= n; i0 += MR) {                               \
                     double *at = at_panel; /* at[kk][i] = A[i0+i][k0+kk] */                 \
                     for (size_t kk = 0; kk < kcq; kk++)                                     \
@@ -105,10 +126,10 @@ extern unsigned long long g_ic_vec_load, g_ic_vec_store, g_ic_vec_fma,
                     const double *bp = &b[k0 * ldb + j0];                                   \
                     if (PIPE) {                                                             \
                         IC_LOAD();                                                          \
-                        VTT(LM) vb = VLE64(LM)(bp, vl);                                     \
+                        VTT(LM) vb = LOAD_B_PANEL(LM, bp, 0, vl);                           \
                         for (size_t kk = 0; kk + 1 < kcq; kk++) {                           \
                             IC_LOAD();                                                      \
-                            VTT(LM) vbn = VLE64(LM)(bp + (kk + 1) * ldb, vl);               \
+                            VTT(LM) vbn = LOAD_B_PANEL(LM, bp, kk + 1, vl);                 \
                             UNROLL(MR, FMACC_ACC, LM, MR)                                   \
                             IC_MOVE();                                                      \
                             vb = vbn;                                                       \
@@ -117,7 +138,7 @@ extern unsigned long long g_ic_vec_load, g_ic_vec_store, g_ic_vec_fma,
                     } else {                                                                \
                         for (size_t kk = 0; kk < kcq; kk++) {                               \
                             IC_LOAD();                                                      \
-                            VTT(LM) vb = VLE64(LM)(bp + kk * ldb, vl);                      \
+                            VTT(LM) vb = LOAD_B_PANEL(LM, bp, kk, vl);                      \
                             UNROLL(MR, FMACC_ACC, LM, MR)                                   \
                         }                                                                   \
                     }                                                                       \
@@ -132,7 +153,7 @@ extern unsigned long long g_ic_vec_load, g_ic_vec_store, g_ic_vec_fma,
                     const double *bp = &b[k0 * ldb + j0];                                   \
                     for (size_t kk = 0; kk < kcq; kk++) {                                   \
                         IC_LOAD(); IC_FMA();                                                \
-                        c0 = VFMACC(LM)(c0, at[kk], VLE64(LM)(bp + kk * ldb, vl), vl);      \
+                        c0 = VFMACC(LM)(c0, at[kk], LOAD_B_PANEL(LM, bp, kk, vl), vl);      \
                     }                                                                       \
                     IC_STORE();                                                             \
                     VSE64(LM)(&c[i0 * ldc + j0], c0, vl);                                   \
