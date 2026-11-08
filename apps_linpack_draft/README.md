@@ -65,6 +65,8 @@ cd ../apps && make bin/linpack.spike && make spike-run-linpack
 | `FULL_SWEEP` | 0 | =1 扫全部 26 实例(默认 6 个锚点) |
 | `SWEEP_REPS` | 1 | 重复次数取最小值 |
 | `SKIP_CHECK` | 0 | =1 跳过功能校验(省 RTL 时间) |
+| `SKIP_SWEEP` | 0 | =1 跳过 DGEMM 计时扫描，只跑完整 Linpack 链路；CFG 标记 `mode=lp_only` |
+| `SKIP_CHAIN` | 0 | =1 跳过 Linpack 链路，仅用于 DGEMM 专项实验 |
 | `SCALAR_N` | min(N,128) | v0 标量基线规模上限 |
 | `VCD_DUMP` | 0 | 波形模式:扫描只跑 (8,2,128,0) |
 | `ARA_IDEAL_DGEMM_ONLY` | 0 | Ideal Dispatcher 模式:只跑 DGEMM 扫描 |
@@ -72,7 +74,7 @@ cd ../apps && make bin/linpack.spike && make spike-run-linpack
 ## 输出格式(机器可解析)
 
 ```
-CFG,lanes=4,vlen=4096,sweepN=256,linpackN=512,nbMax=64,reps=1
+CFG,lanes=4,vlen=4096,sweepN=256,linpackN=512,nbMax=64,reps=1,mode=full
 CHK,var=v2_autovec,maxdiff=0.000e+00,ref=...
 CHK,var=rvv,mr=8,lmul=2,maxdiff=0.000e+00
 CHECK_PHASE,PASS,fails=0
@@ -88,9 +90,34 @@ DONE,fails=0
 - `util` = fpcyc / (2×NR_LANES) ×100,与初稿口径可比;但**数值来源是
   真周期**,预期不再出现 100.0% 这类模型天花板
 
-## 资源预算与仿真时长(4 lane,~200kHz Verilator 估算)
+### 本地 Linpack RTL 专项补跑
 
-| 配置 | L2 占用 | 估算周期 | 估算时长 |
+`SKIP_SWEEP=1` 只省略已完成的 DGEMM 校验和计时扫描，**不会省略 LU、
+triangular solve 或残差计算**。使用现有 lane 模型时无需重新 Verilate：
+
+```bash
+# WSL；默认 4 lanes、NB=32，依次运行 mr8/m2 和 mr4/m1 两个配置
+ARA_ROOT=/root/work/ara bash scripts/rtl_linpack_chain.sh 128
+ARA_ROOT=/root/work/ara bash scripts/rtl_linpack_chain.sh 256
+
+# 可选：OUT_ROOT=<独立新目录> LANES=4 NB=32
+```
+
+每个 `n<N>_nb<NB>/` 目录保存完整源码快照、编译参数、ELF/反汇编及哈希、
+原始 `sim.log` 和机器解析 `res.csv`。脚本拒绝覆盖已有目录，并检查模型
+lane/VLEN、`mode=lp_only`、两条 Linpack 结果、正周期、残差 `<16` 和
+FLOP/cycle 重算一致性。这里的程序仍是**自研 Linpack-style 负载，不是
+Netlib 官方 HPL**；计时区间仅为 `blocked_lu + lu_solve`，输入生成和残差
+计算不计时。
+
+## 资源预算与仿真时长
+
+> 下表是基于约 200kHz 的早期估算，不能作为本机wall-clock承诺。2026-11-03
+> 的 4-lane 原始日志实际只有 8.045k cycles/s；主机、模型构建和程序标量部分
+> 都会改变速度。专项补跑应使用 `lp_only`，并以最终日志的 cycles 和
+> wallclock 统计为准。
+
+| 配置 | L2 占用 | 估算周期 | 旧估算时长 |
 |---|---|---|---|
 | 默认(校验+6锚点+Linpack512) | ~6.2MB | ~35M | ~3 分钟 |
 | FULL_SWEEP+BIG | ~23.5MB | ~700M | 挂一夜 |

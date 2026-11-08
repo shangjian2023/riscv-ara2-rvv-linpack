@@ -139,7 +139,7 @@ for n in (128, 192, 256):
           f"B-packed Linpack N={n}: variants did not use the same matrix")
 
 hpl_rows = read_csv(ROOT / "hpl/results/summary.csv")
-check(len(hpl_rows) == 6, f"official HPL summary row count: {len(hpl_rows)} != 6")
+check(len(hpl_rows) == 7, f"official HPL summary row count: {len(hpl_rows)} != 7")
 for r in hpl_rows:
     label = f"HPL {r['platform']} np={r['ranks']} N={r['N']} NB={r['NB']}"
     check(r["result"] == "PASSED", f"{label}: summary result is not PASSED")
@@ -165,13 +165,38 @@ for r in hpl_rows:
         close(float(r["residual"]), float(residual.group(1)), 1e-12,
               f"{label}: residual differs from official log")
 
+repeat_name = "k230_np1_openblas_n4096_nb256_r3"
+repeat_log = (ROOT / f"hpl/results/{repeat_name}.log").read_text(encoding="utf-8")
+repeat_rows = read_csv(ROOT / f"hpl/results/{repeat_name}.csv")
+repeat_perf = re.findall(
+    r"^WR\S+\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+"
+    r"([0-9.]+)\s+([0-9.eE+-]+)", repeat_log, re.MULTILINE)
+repeat_resid = re.findall(r"\)=\s*([0-9.eE+-]+)\s*\.+\s*PASSED", repeat_log)
+check(len(repeat_rows) == len(repeat_perf) == len(repeat_resid) == 3,
+      "official HPL repeat series must contain three matching runs")
+check(repeat_log.count("1 tests completed and passed residual checks") == 3 and
+      repeat_log.count("0 tests completed and failed residual checks") == 3,
+      "official HPL repeat series does not contain three independent PASSED summaries")
+for i, (r, perf, residual) in enumerate(zip(repeat_rows, repeat_perf, repeat_resid), 1):
+    check(int(r["repetition"]) == i, f"HPL repeat {i}: incorrect repetition index")
+    check(r["result"] == "PASSED", f"HPL repeat {i}: result is not PASSED")
+    for value, key in zip(perf[:4], ("N", "NB", "P", "Q")):
+        check(int(value) == int(r[key]), f"HPL repeat {i}: {key} differs from raw log")
+    close(float(r["time_s"]), float(perf[4]), 1e-12,
+          f"HPL repeat {i}: time differs from raw log")
+    close(float(r["gflops"]), float(perf[5]), 1e-12,
+          f"HPL repeat {i}: GFLOPS differs from raw log")
+    close(float(r["residual"]), float(residual), 1e-12,
+          f"HPL repeat {i}: residual differs from raw log")
+
 if failures:
     print(f"FAILED: {len(failures)} consistency error(s)")
     for failure in failures:
         print(f"- {failure}")
     sys.exit(1)
 print("PASS: 93 cloud rows, 57 E8 comparisons, 89 historical K230 rows, "
-      "496 fair DGEMM rows, 92 B-packed full rows, and "
-      f"{len(hpl_rows)} official HPL logs are consistent")
+      "496 fair DGEMM rows, 92 B-packed full rows, "
+      f"{len(hpl_rows)} official HPL logs, and {len(repeat_rows)} "
+      "official HPL repeat runs are consistent")
 print(f"K230 best: {best['variant']} kc={best['kc']} = {best['gflops']} GFLOPS")
 print(f"K230 Linpack gains N=128/192/256: {' / '.join(gains)}")

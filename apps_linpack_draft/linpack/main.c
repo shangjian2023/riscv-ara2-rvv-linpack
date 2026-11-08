@@ -11,6 +11,7 @@
 //   [2] timing sweep      : v0 scalar / v2 auto-vectorized / hand-written RVV
 //                           configs at N=DGEMM_SWEEP_N. -DFULL_SWEEP=1 runs
 //                           all 26 kernel instances instead of the 6 anchors.
+//                           -DSKIP_SWEEP=1 runs only the full Linpack chain.
 //   [3] linpack chain     : blocked LU + solve at N=LINPACK_N, nb in {32,64},
 //                           HPL-style residual + checksum.
 //
@@ -257,6 +258,8 @@ int main(void) {
            "e7"
 #elif defined(ARA_IDEAL_DGEMM_ONLY)
            "ideal"
+#elif defined(SKIP_SWEEP)
+           "lp_only"
 #else
            "full"
 #endif
@@ -267,7 +270,9 @@ int main(void) {
     fails += check_phase();
 #endif
 
+#ifndef SKIP_SWEEP
     sweep_phase();
+#endif
 
 #if !defined(ARA_IDEAL_DGEMM_ONLY) && !defined(E7_MODE) && !defined(SKIP_CHAIN)
     linpack_phase();

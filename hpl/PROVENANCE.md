@@ -63,8 +63,22 @@ f1c77ac8bfc6ff4f69fa3cd416213d928a977f5a5532ddd15c286f8a77b3bdb1  xhpl_openblas.
 ```
 
 Both were verified on the board. Official HPL PASSED logs were collected at
-N=1000/NB=128 and N=4096/NB=128,256. The best measured configuration is
-N=4096/NB=256 at 1.7736 GFLOPS with scaled residual 5.13885196e-03.
+N=1000/NB=128 and N=4096/NB=128,256. The original N=4096/NB=256 run measured
+1.7736 GFLOPS with scaled residual 5.13885196e-03.
+
+On 2026-11-08, the same N=4096/NB=256 binary and input were run three more times
+on the single Linux CPU. All three official residual checks passed. The measured
+rates were 1.7737, 1.7755, and 1.7857 GFLOPS (median 1.7755; times 25.84, 25.82,
+and 25.67 s). The residual was 5.13885196e-03 in every run. Raw output and the
+machine-checked per-repeat table are `results/k230_np1_openblas_n4096_nb256_r3.log`
+and `.csv`; reproduce the table with `scripts/summarize_hpl_repeats.py`. These are
+repeatability results, not a second core or a different software configuration.
+
+A separate single run with `HPL.n8192_nb256.dat` also passed on the same board:
+194.50 s, 1.8848 GFLOPS, scaled residual 5.61038013e-03. Its complete output is
+`results/k230_np1_openblas_n8192_nb256.log`. The board reported 972 MiB RAM;
+N=8192 uses a 512 MiB matrix before workspace. This is a single large-N data
+point, not a repeated median.
 
 Acknowledgement required by the upstream license:
 

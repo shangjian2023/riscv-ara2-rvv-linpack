@@ -1,0 +1,2 @@
+repetition,N,NB,P,Q,time_s,gflops,residual,result
+1,8192,256,1,1,194.50,1.8848e+00,5.61038013e-03,PASSED
