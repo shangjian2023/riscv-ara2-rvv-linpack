@@ -1,0 +1,9 @@
+N,runs_per_variant,variant,gflops
+160,15,unpacked,1.136293
+160,15,B-packed,1.321843
+256,13,unpacked,0.678881
+256,13,B-packed,1.163775
+512,9,unpacked,0.304739
+512,9,B-packed,0.854627
+1024,5,unpacked,0.174192
+1024,5,B-packed,0.980404

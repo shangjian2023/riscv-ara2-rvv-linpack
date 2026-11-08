@@ -76,9 +76,13 @@ repeatability results, not a second core or a different software configuration.
 
 A separate single run with `HPL.n8192_nb256.dat` also passed on the same board:
 194.50 s, 1.8848 GFLOPS, scaled residual 5.61038013e-03. Its complete output is
-`results/k230_np1_openblas_n8192_nb256.log`. The board reported 972 MiB RAM;
-N=8192 uses a 512 MiB matrix before workspace. This is a single large-N data
-point, not a repeated median.
+`results/k230_np1_openblas_n8192_nb256.log`. A second single run at N=8192 with
+NB=512 passed in 194.70 s at 1.8829 GFLOPS with scaled residual 5.75177252e-03;
+see `results/k230_np1_openblas_n8192_nb512.log` and its machine-checked `_r1.csv`.
+Thus NB=256 remains the best measured configuration, but the two NB values differ
+by only 0.10% and each has only one run. The board reported 972 MiB RAM; N=8192
+uses a 512 MiB matrix before workspace. These are single large-N data points, not
+repeated medians.
 
 Acknowledgement required by the upstream license:
 

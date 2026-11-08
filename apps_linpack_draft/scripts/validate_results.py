@@ -2,6 +2,7 @@
 """Validate the frozen cloud RTL, E8, and K230 result tables."""
 from collections import Counter
 import csv
+import hashlib
 import math
 from pathlib import Path
 import re
@@ -139,7 +140,7 @@ for n in (128, 192, 256):
           f"B-packed Linpack N={n}: variants did not use the same matrix")
 
 hpl_rows = read_csv(ROOT / "hpl/results/summary.csv")
-check(len(hpl_rows) == 7, f"official HPL summary row count: {len(hpl_rows)} != 7")
+check(len(hpl_rows) == 8, f"official HPL summary row count: {len(hpl_rows)} != 8")
 for r in hpl_rows:
     label = f"HPL {r['platform']} np={r['ranks']} N={r['N']} NB={r['NB']}"
     check(r["result"] == "PASSED", f"{label}: summary result is not PASSED")
@@ -189,6 +190,119 @@ for i, (r, perf, residual) in enumerate(zip(repeat_rows, repeat_perf, repeat_res
     close(float(r["residual"]), float(residual), 1e-12,
           f"HPL repeat {i}: residual differs from raw log")
 
+local_root = ROOT / "apps_linpack_draft/results/local_rtl"
+local_rows = read_csv(ROOT / "apps_linpack_draft/results/local_linpack_summary.csv")
+local_summary = {
+    (r["variant"], int(r["profiled"]), int(r["lanes"]), int(r["N"]),
+     int(r["NB"]), int(r["mr"]), int(r["lmul"])): r
+    for r in local_rows
+}
+check(len(local_summary) == len(local_rows), "duplicate local Linpack RTL summary keys")
+local_raw = {}
+local_logs = sorted(local_root.glob("*_lanes/n*_nb*/sim.log"))
+check(local_logs, "no completed local Linpack RTL logs")
+for log in local_logs:
+    run = log.parent
+    text = log.read_text(encoding="utf-8")
+    config_text = (run / "config.txt").read_text(encoding="utf-8")
+    label = run.relative_to(ROOT).as_posix()
+    check("DONE,fails=0" in text and "mode=lp_only" in text,
+          f"{label}: incomplete or wrong-mode local Linpack run")
+    cfg = re.search(r"^CFG,lanes=(\d+),vlen=(\d+),.*linpackN=(\d+),nbMax=(\d+),",
+                    text, re.MULTILINE)
+    check(cfg is not None, f"{label}: missing local Linpack CFG")
+    if not cfg:
+        continue
+    lanes, vlen, n, nb_max = map(int, cfg.groups())
+    check(vlen == 1024 * lanes, f"{label}: VLEN/lane mismatch")
+    if "LP_OPT_PANEL_V2=1" in config_text:
+        variant = "panel_v2"
+    elif "LP_OPT_SCALAR_PHASES=1" in config_text:
+        variant = "rvv_phases"
+    else:
+        variant = "baseline"
+    profiled = int("LP_PROFILE=1" in config_text)
+    profiles = {}
+    for line in text.splitlines():
+        if not line.startswith("PROF,"):
+            continue
+        values = dict(field.split("=", 1) for field in line.split(",")[1:])
+        key = (int(values["mr"]), int(values["lmul"]))
+        phases = tuple(int(values[name]) for name in
+                       ("panel", "u12", "dgemm", "solve"))
+        check(all(value >= 0 for value in phases) and key not in profiles,
+              f"{label}: invalid or duplicate profile row")
+        profiles[key] = phases
+    check(bool(profiles) == bool(profiled), f"{label}: config/profile-row mismatch")
+    run_rows = []
+    for line in text.splitlines():
+        if not line.startswith("RES,phase=lp,"):
+            continue
+        values = dict(field.split("=", 1) for field in line.split(",")[1:])
+        row_n, nb = int(values["N"]), int(values["nb"])
+        mr, lmul = int(values["mr"]), int(values["lmul"])
+        cycles = int(values["cycles"])
+        residual = float(values["resid"])
+        expected = (2.0 / 3.0 * row_n**3 + 2.0 * row_n**2) / cycles
+        key = (variant, profiled, lanes, row_n, nb, mr, lmul)
+        check(row_n == n and nb <= nb_max and cycles > 0,
+              f"{label}: inconsistent N/NB/cycles")
+        check(0.0 <= residual < 16.0, f"{label}: residual outside threshold")
+        close(float(values["fpcyc"]), expected, 0.00051, f"{label}: FLOP/cycle mismatch")
+        close(float(values["util"]), 100.0 * expected / (2 * lanes), 0.011,
+              f"{label}: utilization mismatch")
+        check(key not in local_raw, f"{label}: duplicate raw result key")
+        local_raw[key] = (values, run)
+        run_rows.append((key, values))
+        summary_row = local_summary.get(key)
+        check(summary_row is not None, f"{label}: result missing from local summary")
+        if summary_row:
+            check(int(summary_row["vlen"]) == vlen and
+                  int(summary_row["cycles"]) == cycles and
+                  int(summary_row["kc"]) == int(values["kc"]) and
+                  int(summary_row["pipe"]) == int(values["pipe"]),
+                  f"{label}: summary configuration/cycles differ from raw log")
+            for raw_key, summary_key in (("fpcyc", "fpcyc"), ("util", "util"),
+                                         ("resid", "resid")):
+                close(float(summary_row[summary_key]), float(values[raw_key]), 1e-12,
+                      f"{label}: summary {summary_key} differs from raw log")
+            phases = profiles.get((mr, lmul))
+            if profiled and phases is not None:
+                check(sum(phases) <= cycles, f"{label}: profile counters exceed total ROI")
+                for phase, value in zip(("panel", "u12", "dgemm", "solve"), phases):
+                    check(int(summary_row[f"{phase}_cycles"]) == value,
+                          f"{label}: summary {phase} cycles differ from raw log")
+            elif not profiled:
+                check(all(summary_row[f"{phase}_cycles"] == "" for phase in
+                          ("panel", "u12", "dgemm", "solve")),
+                      f"{label}: unprofiled summary contains phase counters")
+            check(summary_row["checksum"] == values["chk"] and
+                  summary_row["source_log"] == run.relative_to(local_root).as_posix() + "/sim.log",
+                  f"{label}: summary checksum/source path mismatch")
+    check([(key[5], key[6]) for key, _ in run_rows] == [(8, 2), (4, 1)],
+          f"{label}: expected tuned and baseline rows")
+    if len(run_rows) == 2:
+        check(run_rows[0][1]["resid"] == run_rows[1][1]["resid"] and
+              run_rows[0][1]["chk"] == run_rows[1][1]["chk"],
+              f"{label}: tuned/baseline numerical results differ")
+    for hash_file in run.glob("*.sha256"):
+        for line in hash_file.read_text(encoding="utf-8").splitlines():
+            digest, name = line.split(maxsplit=1)
+            target = run / Path(name.strip()).name
+            if target.is_file():
+                actual = hashlib.sha256(target.read_bytes()).hexdigest()
+                check(actual == digest, f"{label}: SHA-256 mismatch for {target.name}")
+check(set(local_summary) == set(local_raw), "local summary and raw RTL result keys differ")
+local_numerics = {}
+for key, (values, run) in local_raw.items():
+    comparison_key = key[2:]
+    fingerprint = (values["resid"], values["chk"])
+    if comparison_key in local_numerics:
+        check(local_numerics[comparison_key][0] == fingerprint,
+              f"{run.relative_to(ROOT).as_posix()}: numerical result differs from baseline")
+    else:
+        local_numerics[comparison_key] = (fingerprint, run)
+
 if failures:
     print(f"FAILED: {len(failures)} consistency error(s)")
     for failure in failures:
@@ -196,7 +310,8 @@ if failures:
     sys.exit(1)
 print("PASS: 93 cloud rows, 57 E8 comparisons, 89 historical K230 rows, "
       "496 fair DGEMM rows, 92 B-packed full rows, "
-      f"{len(hpl_rows)} official HPL logs, and {len(repeat_rows)} "
-      "official HPL repeat runs are consistent")
+      f"{len(hpl_rows)} official HPL logs, {len(repeat_rows)} "
+      f"official HPL repeat runs, and {len(local_rows)} local full-chain "
+      "Linpack RTL rows are consistent")
 print(f"K230 best: {best['variant']} kc={best['kc']} = {best['gflops']} GFLOPS")
 print(f"K230 Linpack gains N=128/192/256: {' / '.join(gains)}")

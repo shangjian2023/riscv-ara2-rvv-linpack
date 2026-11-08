@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="844.488pt" height="459.596094pt" viewBox="0 0 844.488 459.596094" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-11-08T23:50:52.598594</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 459.596094 
+L 844.488 459.596094 
+L 844.488 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 7.2 421.38 
+L 492.357014 421.38 
+Q 502.060154 421.38 502.060154 414.36 
+L 502.060154 63.36 
+Q 502.060154 56.34 492.357014 56.34 
+L 7.2 56.34 
+Q -2.50314 56.34 -2.50314 63.36 
+L -2.50314 414.36 
+Q -2.50314 421.38 7.2 421.38 
+z
+" clip-path="url(#p041e13fc04)" style="fill: #111820; stroke: #111820; stroke-linejoin: miter"/>
+   </g>
+   <g id="line2d_1">
+    <path d="M 33.883636 312.57 
+L 463.247593 312.57 
+" clip-path="url(#p041e13fc04)" style="fill: none; stroke: #405061; stroke-width: 1.2; stroke-linecap: square"/>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans Mono'; fill: #e6edf3" transform="translate(33.883636 120.865781)">vl = vsetvl_e64m4(hi - offset);</text>
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans Mono'; fill: #e6edf3" transform="translate(33.883636 144.678516)">pivot = vle64(&amp;A[c, offset], vl);</text>
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans Mono'; fill: #e6edf3" transform="translate(33.883636 168.570352)">for (r = c + 1; r &lt; n; r++) {</text>
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans Mono'; fill: #e6edf3" transform="translate(33.883636 192.38625)">  vd = vle64(&amp;A[r, offset], vl);</text>
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans Mono'; fill: #e6edf3" transform="translate(33.883636 215.553516)">  vd = vfmacc(vd, -A[r,c], pivot, vl);</text>
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans Mono'; fill: #e6edf3" transform="translate(33.883636 239.63625)">  vse64(&amp;A[r, offset], vd, vl);</text>
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans Mono'; fill: #e6edf3" transform="translate(33.883636 263.070352)">}</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 13.5px; font-family: 'Microsoft YaHei'; fill: #a9d6c5" transform="translate(33.883636 353.738606)">优化前：每一行都重复装载主元行</text>
+    <text style="font-size: 13.5px; font-family: 'Microsoft YaHei'; fill: #a9d6c5" transform="translate(33.883636 377.44574)">优化后：主元行驻留向量寄存器，跨行复用</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 16px; font-family: 'Microsoft YaHei'; text-anchor: middle; fill: #202020" x="249.778507" y="49.36" transform="rotate(-0 249.778507 49.36)">第二轮列分块优化核心伪代码</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_3">
+    <path d="M 530.543566 179.892 
+L 831.02791 179.892 
+Q 834.783964 179.892 834.783964 175.68 
+L 834.783964 130.05 
+Q 834.783964 125.838 831.02791 125.838 
+L 530.543566 125.838 
+Q 526.787511 125.838 526.787511 130.05 
+L 526.787511 175.68 
+Q 526.787511 179.892 530.543566 179.892 
+z
+" clip-path="url(#p95eaa67959)" style="fill: #f5f7fa; stroke: #d9e1e8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 530.543566 246.582 
+L 831.02791 246.582 
+Q 834.783964 246.582 834.783964 242.37 
+L 834.783964 196.74 
+Q 834.783964 192.528 831.02791 192.528 
+L 530.543566 192.528 
+Q 526.787511 192.528 526.787511 196.74 
+L 526.787511 242.37 
+Q 526.787511 246.582 530.543566 246.582 
+z
+" clip-path="url(#p95eaa67959)" style="fill: #f5f7fa; stroke: #d9e1e8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 530.543566 313.272 
+L 831.02791 313.272 
+Q 834.783964 313.272 834.783964 309.06 
+L 834.783964 263.43 
+Q 834.783964 259.218 831.02791 259.218 
+L 530.543566 259.218 
+Q 526.787511 259.218 526.787511 263.43 
+L 526.787511 309.06 
+Q 526.787511 313.272 530.543566 313.272 
+z
+" clip-path="url(#p95eaa67959)" style="fill: #f5f7fa; stroke: #d9e1e8; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 17px; font-family: 'Microsoft YaHei'; text-anchor: start; fill: #202020" x="533.673611" y="95.163437" transform="rotate(-0 533.673611 95.163437)">真实 RVV 反汇编</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 12.5px; font-family: 'DejaVu Sans Mono'; text-anchor: start; fill: #2a78d6" x="543.063747" y="147.370762" transform="rotate(-0 543.063747 147.370762)">vlse64.v  v4,(a5),s1</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 11.5px; font-family: 'Microsoft YaHei'; text-anchor: start; fill: #52606d" x="543.063747" y="166.752573" transform="rotate(-0 543.063747 166.752573)">跨步装载</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 12.5px; font-family: 'DejaVu Sans Mono'; text-anchor: start; fill: #2a78d6" x="543.063747" y="214.02707" transform="rotate(-0 543.063747 214.02707)">vsse64.v  v4,(a5),s1</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 11.5px; font-family: 'Microsoft YaHei'; text-anchor: start; fill: #52606d" x="543.063747" y="233.442573" transform="rotate(-0 543.063747 233.442573)">跨步存回</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 12.5px; font-family: 'DejaVu Sans Mono'; text-anchor: start; fill: #2a78d6" x="543.063747" y="280.717559" transform="rotate(-0 543.063747 280.717559)">vfmacc.vf v4,fa5,v8</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 11.5px; font-family: 'Microsoft YaHei'; text-anchor: start; fill: #52606d" x="543.063747" y="300.104722" transform="rotate(-0 543.063747 300.104722)">向量乘加</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 14px; font-family: 'Microsoft YaHei'; fill: #202020" transform="translate(533.673611 364.849463)">主元行跨多个待更新行复用</text>
+    <text style="font-size: 14px; font-family: 'Microsoft YaHei'; fill: #202020" transform="translate(533.673611 389.468545)">RVV 整行交换与列缩放</text>
+    <text style="font-size: 14px; font-family: 'Microsoft YaHei'; fill: #202020" transform="translate(533.673611 414.133564)">残差与校验和保持不变</text>
+   </g>
+  </g>
+  <g id="text_12">
+   <text style="font-size: 18px; font-family: 'Microsoft YaHei'; text-anchor: middle; fill: #202020" x="415.656" y="22.201875" transform="rotate(-0 415.656 22.201875)">瓶颈优化落实到真实RVV指令</text>
+  </g>
+  <g id="text_13">
+   <text style="font-size: 11.5px; font-family: 'Microsoft YaHei'; text-anchor: middle; fill: #52606d" x="415.656" y="449.46" transform="rotate(-0 415.656 449.46)">反汇编来源：n128_nb32_opt_panel_v2/linpack.dump；前两列对应列缩放，vfmacc.vf 对应行更新</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p041e13fc04">
+   <rect x="7.2" y="63.36" width="485.157014" height="351"/>
+  </clipPath>
+  <clipPath id="p95eaa67959">
+   <rect x="524.283475" y="63.36" width="313.004525" height="351"/>
+  </clipPath>
+ </defs>
+</svg>

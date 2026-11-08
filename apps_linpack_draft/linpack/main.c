@@ -242,6 +242,13 @@ static void linpack_phase(void) {
                    cfgs[c].mr, cfgs[c].lmul, cfgs[c].kc, cfgs[c].pipe, (int)n,
                    (int)nbs[b], (unsigned long)cyc, gf_pc, g_util, resid,
                    (unsigned long)(chk >> 32), (unsigned long)chk);
+#ifdef LP_PROFILE
+            printf("PROF,N=%d,nb=%d,mr=%d,lmul=%d,panel=%lu,u12=%lu,"
+                   "dgemm=%lu,solve=%lu\n", (int)n, (int)nbs[b], cfgs[c].mr,
+                   cfgs[c].lmul, (unsigned long)lp_prof_panel,
+                   (unsigned long)lp_prof_u12, (unsigned long)lp_prof_dgemm,
+                   (unsigned long)lp_prof_solve);
+#endif
         }
     }
 }

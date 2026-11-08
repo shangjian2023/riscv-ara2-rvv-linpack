@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 static int64_t host_t0;
+static inline int64_t get_cycle_count(void) { return 0; }
 static inline void start_timer(void) { host_t0 = 0; }
 static inline void stop_timer(void) { host_t0 = 1; }
 static inline int64_t get_timer(void) { return host_t0 ? 1000 : 0; }

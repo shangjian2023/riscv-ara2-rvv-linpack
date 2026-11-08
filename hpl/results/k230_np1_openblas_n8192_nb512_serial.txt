@@ -1,0 +1,16 @@
+Receiver ready; mode=checksum, bytes=1133
+upload 100% (1133/1133 bytes)
+TRANSFER_VERIFIED path=/root/hpl/HPL.n8192_nb512.dat bytes=1133 sha256=b85ecb38e77a0a2ae3d0e95871ad9f5447db342c9c987d784fd928f91dd4bdbd
+cd /root/hpl && cp HPL.n8192_nb512.dat HPL.dat && ./xhpl_op
+en
+blas > /root/hpl/hpl_openblas_n8192_nb512.log 2>&1
+0_RC__=$?
+
+
+[root@canaan ~/hpl ]#
+[root@canaan ~/hpl ]#echo __K230_RC__=$?
+__K230_RC__=0
+[root@canaan ~/hpl ]#
+[root@canaan ~/hpl ]#
+
+[exited with code 0]

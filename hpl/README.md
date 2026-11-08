@@ -21,9 +21,10 @@ build. The x86_64 runs are workflow checks, not K230 performance claims.
 | CanMV-K230 C908, OpenBLAS ZVL128B | 1 | 4096 | 128 | 1×1 | 26.35 | 1.7394 | 5.40209953e-03 | PASSED |
 | CanMV-K230 C908, OpenBLAS ZVL128B | 1 | 4096 | 256 | 1×1 | 25.84 | **1.7736** | 5.13885196e-03 | PASSED |
 | CanMV-K230 C908, OpenBLAS ZVL128B | 1 | 8192 | 256 | 1×1 | 194.50 | **1.8848** | 5.61038013e-03 | PASSED |
+| CanMV-K230 C908, OpenBLAS ZVL128B | 1 | 8192 | 512 | 1×1 | 194.70 | 1.8829 | 5.75177252e-03 | PASSED |
 
 Full outputs are in `results/local_np1_openmpi.log`,
-`results/local_np2_openmpi.log`, `results/k230_np1_mpich.log`, and the three
+`results/local_np2_openmpi.log`, `results/k230_np1_mpich.log`, and all
 `results/k230_np1_openblas*.log` files. Every K230 log ends with the official
 `1 tests completed and passed residual checks` and
 `0 tests completed and failed residual checks` lines. Raw serial transcripts
@@ -35,7 +36,9 @@ official correctness baseline. At the same N=1000/NB=128 configuration,
 OpenBLAS 0.3.34 with its RVV ZVL128B kernels improves throughput from 0.20729
 to 1.3239 GFLOPS (6.39×). Three additional N=4096/NB=256 repeats measured
 1.7737/1.7755/1.7857 GFLOPS (median 1.7755), all PASSED. A separate single-run
-N=8192/NB=256 measurement reaches 1.8848 GFLOPS. None of these results is
+N=8192/NB=256 measurement reaches 1.8848 GFLOPS; a separate N=8192/NB=512 run
+reaches 1.8829 GFLOPS. Both are single runs, so their 0.10% difference is not a
+tuning ranking with established repeatability. None of these results is
 presented as a TOP500-class or dual-core peak claim.
 
 ## Local build and validation
@@ -84,9 +87,9 @@ For the optimized build, compile OpenBLAS 0.3.34 with
 `TARGET=RISCV64_ZVL128B`, `NO_THREADS=1`, `NO_SHARED=1`, and Clang 18 as
 recorded in PROVENANCE.md, then set `K230_BLAS_LIB` to its `libopenblas.a`.
 Keep the reference and OpenBLAS binaries under distinct names. The recorded
-large inputs are `HPL.n4096_nb128.dat`, `HPL.n4096_nb256.dat`, and
-`HPL.n8192_nb256.dat`. The board reported 972 MiB total RAM before the N=8192
-run; that matrix alone occupies 512 MiB, so larger sizes should not be attempted
+large inputs are `HPL.n4096_nb128.dat`, `HPL.n4096_nb256.dat`,
+`HPL.n8192_nb256.dat`, and `HPL.n8192_nb512.dat`. The board reported 972 MiB
+total RAM before the N=8192 run; that matrix alone occupies 512 MiB, so larger sizes should not be attempted
 without a fresh memory-budget check.
 
 For a CH342 console on COM3, the checked XMODEM script transfers both files,

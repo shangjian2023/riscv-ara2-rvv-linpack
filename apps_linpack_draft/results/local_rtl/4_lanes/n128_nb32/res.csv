@@ -1,0 +1,4 @@
+CFG,lanes=4,vlen=4096,sweepN=64,linpackN=128,nbMax=32,reps=1,mode=lp_only
+RES,phase=lp,var=linpack,mr=8,lmul=2,kc=128,pipe=0,N=128,nb=32,cycles=5708946,fpcyc=0.251,util=3.13,resid=0.004619368,chk=f7144d92f7144d92c8f0ad66
+RES,phase=lp,var=linpack,mr=4,lmul=1,kc=64,pipe=0,N=128,nb=32,cycles=5799204,fpcyc=0.247,util=3.08,resid=0.004619368,chk=f7144d92f7144d92c8f0ad66
+DONE,fails=0

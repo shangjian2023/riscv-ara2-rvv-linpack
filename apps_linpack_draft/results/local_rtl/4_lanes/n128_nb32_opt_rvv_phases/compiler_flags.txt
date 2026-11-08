@@ -1,0 +1,1 @@
+-O2 -g -mcmodel=medany -march=rv64gcv -mabi=lp64d -ffreestanding -Icommon -I/root/work/shim-include -static -fno-common -fno-builtin-printf -ffunction-sections -fdata-sections -DNR_LANES=4 -DVLEN=4096 -DSKIP_CHECK=1 -DSKIP_SWEEP=1 -DDGEMM_SWEEP_N=64 -DLINPACK_N=128 -DLINPACK_NB=32 -DLP_OPT_SCALAR_PHASES=1

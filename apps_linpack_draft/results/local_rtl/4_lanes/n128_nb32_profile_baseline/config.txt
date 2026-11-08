@@ -1,0 +1,11 @@
+N=128
+NB=32
+LANES=4
+VLEN=4096
+DGEMM_SWEEP_N=64
+SKIP_CHECK=1
+SKIP_SWEEP=1
+LP_PROFILE=1
+chain=blocked_lu+lu_solve+linpack_residual
+timing=mcycle around blocked_lu+lu_solve only
+note=self-developed Linpack-style workload, not official HPL

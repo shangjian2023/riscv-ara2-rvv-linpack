@@ -26,3 +26,21 @@ third_party/hpl-2.3/bin/
 third_party/hpl-2.3/lib/
 hpl/build/
 hpl/results/*/
+
+# Local tool downloads and rebuildable demo intermediates
+.tools/
+deliverables/
+demo/build/
+
+# Rebuildable RTL objects and binaries; retain source, logs, dumps and hashes
+apps_linpack_draft/results/local_rtl/**/*.o
+apps_linpack_draft/results/local_rtl/**/*.elf
+
+# Private report sources and revision intermediates (final report/figures are selected explicitly)
+report_archive/**
+!report_archive/2026-11-08/
+!report_archive/2026-11-08/参赛项目设计报告-融合队友版-修订稿-v5.docx
+!report_archive/2026-11-08/figures/
+!report_archive/2026-11-08/figures/**
+report_archive/**/__pycache__/
+report_archive/**/*.pyc

@@ -14,14 +14,16 @@ LANES="${LANES:-4}"
 NB="${NB:-32}"
 ARA_ROOT="${ARA_ROOT:-/root/work/ara}"
 OUT_ROOT="${OUT_ROOT:-$ARA_ROOT/results/local_linpack}"
-APP_DIR="$ARA_ROOT/apps"
+APP_DIR="${APP_DIR:-$ARA_ROOT/apps}"
 HW_DIR="$ARA_ROOT/hardware"
-MODEL="$HW_DIR/build/verilator/Vara_tb_verilator"
-MODEL_FLIST="$HW_DIR/build/verilator/bender_script_${LANES}_lanes"
+MODEL_DIR="${MODEL_DIR:-$HW_DIR/build/verilator}"
+MODEL="$MODEL_DIR/Vara_tb_verilator"
+MODEL_FLIST="$MODEL_DIR/bender_script_${LANES}_lanes"
 XGCC="${RTLC_GCC_PREFIX:-/opt/xpack/xpack-riscv-none-elf-gcc-15.2.0-1/bin/riscv-none-elf-}"
 SHIM="${RTLC_SHIM:-/root/work/shim-include}"
 VLEN=$((1024 * LANES))
-RUN_DIR="$OUT_ROOT/${LANES}_lanes/n${N}_nb${NB}"
+RUN_TAG="${RUN_TAG:-}"
+RUN_DIR="$OUT_ROOT/${LANES}_lanes/n${N}_nb${NB}${RUN_TAG}"
 
 [[ "$N" =~ ^[0-9]+$ ]] && ((N > 0)) || { echo "N must be positive" >&2; exit 2; }
 [[ "$NB" =~ ^(32|64)$ ]] || { echo "NB must be 32 or 64" >&2; exit 2; }
@@ -48,6 +50,7 @@ printf 'chain=blocked_lu+lu_solve+linpack_residual\n' >> "$RUN_DIR/config.txt"
 printf 'timing=mcycle around blocked_lu+lu_solve only\n' >> "$RUN_DIR/config.txt"
 printf 'note=self-developed Linpack-style workload, not official HPL\n' \
   >> "$RUN_DIR/config.txt"
+printf 'extra_defines=%s\n' "${EXTRA_DEFINES:-}" >> "$RUN_DIR/config.txt"
 sha256sum "$MODEL" > "$RUN_DIR/model.sha256"
 
 # Make tracks timestamps, not compiler definitions. Remove only generated app
@@ -57,7 +60,7 @@ rm -f "$APP_DIR/bin/linpack" "$APP_DIR/bin/linpack.dump" \
       "$APP_DIR/common/"*-gcc.o "$APP_DIR/common/"*-llvm.o \
       "$APP_DIR/common/link.ld" "$APP_DIR/linpack/data.S" \
       "$APP_DIR/linpack/data.S.o"
-DEFINES="-DSKIP_CHECK=1 -DSKIP_SWEEP=1 -DDGEMM_SWEEP_N=64 -DLINPACK_N=$N -DLINPACK_NB=$NB"
+DEFINES="-DSKIP_CHECK=1 -DSKIP_SWEEP=1 -DDGEMM_SWEEP_N=64 -DLINPACK_N=$N -DLINPACK_NB=$NB ${EXTRA_DEFINES:-}"
 FLAGS="-O2 -g -mcmodel=medany -march=rv64gcv -mabi=lp64d -ffreestanding -Icommon -I$SHIM -static -fno-common -fno-builtin-printf -ffunction-sections -fdata-sections -DNR_LANES=$LANES -DVLEN=$VLEN $DEFINES"
 printf '%s\n' "$FLAGS" > "$RUN_DIR/compiler_flags.txt"
 
@@ -76,7 +79,7 @@ sha256sum "$RUN_DIR/linpack.elf" "$RUN_DIR/linpack.dump" > "$RUN_DIR/binary.sha2
 
 (
   cd "$HW_DIR"
-  ./build/verilator/Vara_tb_verilator +notrace \
+  "$MODEL" +notrace \
     -l "ram,$RUN_DIR/linpack.elf,elf"
 ) > "$RUN_DIR/sim.log" 2>&1
 

@@ -67,6 +67,7 @@ cd ../apps && make bin/linpack.spike && make spike-run-linpack
 | `SKIP_CHECK` | 0 | =1 跳过功能校验(省 RTL 时间) |
 | `SKIP_SWEEP` | 0 | =1 跳过 DGEMM 计时扫描，只跑完整 Linpack 链路；CFG 标记 `mode=lp_only` |
 | `SKIP_CHAIN` | 0 | =1 跳过 Linpack 链路，仅用于 DGEMM 专项实验 |
+| `LP_PROFILE` | 0 | =1 增加 panel/U12/DGEMM/solve 分阶段 `PROF` 周期行 |
 | `SCALAR_N` | min(N,128) | v0 标量基线规模上限 |
 | `VCD_DUMP` | 0 | 波形模式:扫描只跑 (8,2,128,0) |
 | `ARA_IDEAL_DGEMM_ONLY` | 0 | Ideal Dispatcher 模式:只跑 DGEMM 扫描 |
@@ -109,6 +110,50 @@ lane/VLEN、`mode=lp_only`、两条 Linpack 结果、正周期、残差 `<16` �
 FLOP/cycle 重算一致性。这里的程序仍是**自研 Linpack-style 负载，不是
 Netlib 官方 HPL**；计时区间仅为 `blocked_lu + lu_solve`，输入生成和残差
 计算不计时。
+
+2026-11-08 已归档首个完整 N=128/NB=32、4-lane RTL 结果：mr8/m2 为
+5,708,946 cycles（0.251 FLOP/cycle，3.13%），mr4/m1 为 5,799,204 cycles
+（0.247，3.08%）。两者残差均为 0.004619368，checksum 一致，
+`DONE,fails=0`；wall-clock 1557.81 s。小 N 全链路效率明显低于纯 DGEMM，
+该负结果不得用内核数据替代。`scripts/rtl_linpack_profile.sh` 进一步输出
+`PROF` 行，测量 panel/U12/DGEMM/solve 的周期分布。
+
+同带 profiling 的 N=128、mr8/m2 对照显示，第一轮 RVV 优化主要收益来自
+panel 和 U12，而非改变 DGEMM 内核：
+
+| 阶段 | baseline | RVV phases | panel v2 |
+|---|---:|---:|---:|
+| panel | 3,420,812 | 1,471,502 | 905,821 |
+| U12 | 1,732,536 | 206,077 | 206,309 |
+| DGEMM | 227,307 | 226,633 | 227,622 |
+| solve | 322,778 | 175,968 | 175,777 |
+| 总计时区间 | 5,714,244 | 2,091,060 | **1,526,260** |
+
+RVV phases 和 panel v2 相对同带 profiling baseline 分别为 **2.73×** 和
+**3.74×**；panel v2 达到 0.938 FLOP/cycle、11.72% 利用率。独立的无
+profiling 对照中，RVV phases 从 5,708,946 降至 2,172,186 cycles，为
+**2.63×**；panel v2 进一步降至 **1,521,378 cycles**，为 **3.75×**、
+0.941 FLOP/cycle、11.76% 利用率。所有版本残差和 checksum 完全一致。
+
+N=256、NB=32 的无 profiling 结果已完成 baseline、RVV phases 和 panel v2：
+mr8/m2 分别为 25,940,413/10,005,116/7,188,195 cycles，同配置加速
+**2.59×/3.61×**；panel v2 达到 1.574 FLOP/cycle、19.68% 利用率。
+mr4/m1 分别为 26,856,450/10,913,579/8,143,564 cycles。所有配置和版本的
+残差均为 0.004652214，checksum 完全一致；更大规模仍需独立实测。
+
+Ara 的 `get_cycle_count()` 含 fence，profiling 会改变时序，所以 2.73×
+和 3.74× 只用于同为 profiling 版本的公平对照；A21 打包等未单列开销也不能
+归因到四个子项。`LP_OPT_PANEL_V2` 复用 pivot 行并向量化行交换、列缩放。
+汇总键包含 `variant/profiled`，可同时保存 baseline、优化和 profiling 数据
+而不会覆盖或混淆口径。
+
+汇总和全量校验：
+
+```bash
+python3 -I scripts/summarize_local_linpack.py results/local_rtl \
+  results/local_linpack_summary.csv
+python3 -I scripts/validate_results.py
+```
 
 ## 资源预算与仿真时长
 

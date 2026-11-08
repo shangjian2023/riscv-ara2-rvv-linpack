@@ -1,0 +1,7 @@
+# Preserve byte-hashed evidence exactly across Windows and Linux checkouts.
+apps_linpack_draft/results/** -text
+hpl/results/** -text
+demo/build/** -text
+
+# Build scripts are executed by Bash on Linux and in WSL.
+*.sh text eol=lf

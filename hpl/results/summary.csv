@@ -6,3 +6,4 @@ k230_canmv_c908_single_cpu,MPICH_4.2.0_static_ch3_sock,OpenBLAS_0.3.34_static_ZV
 k230_canmv_c908_single_cpu,MPICH_4.2.0_static_ch3_sock,OpenBLAS_0.3.34_static_ZVL128B,1,4096,128,1,1,26.35,1.7394e+00,5.40209953e-03,PASSED,k230_np1_openblas_n4096_nb128.log
 k230_canmv_c908_single_cpu,MPICH_4.2.0_static_ch3_sock,OpenBLAS_0.3.34_static_ZVL128B,1,4096,256,1,1,25.84,1.7736e+00,5.13885196e-03,PASSED,k230_np1_openblas_n4096_nb256.log
 k230_canmv_c908_single_cpu,MPICH_4.2.0_static_ch3_sock,OpenBLAS_0.3.34_static_ZVL128B,1,8192,256,1,1,194.50,1.8848e+00,5.61038013e-03,PASSED,k230_np1_openblas_n8192_nb256.log
+k230_canmv_c908_single_cpu,MPICH_4.2.0_static_ch3_sock,OpenBLAS_0.3.34_static_ZVL128B,1,8192,512,1,1,194.70,1.8829e+00,5.75177252e-03,PASSED,k230_np1_openblas_n8192_nb512.log

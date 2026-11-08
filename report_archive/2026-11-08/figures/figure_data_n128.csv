@@ -1,0 +1,11 @@
+stage,variant,cycles
+Panel LU,baseline,3420812
+U12 update,baseline,1732536
+Trailing DGEMM,baseline,227307
+Triangular solve,baseline,322778
+Total,baseline,5714244
+Panel LU,optimized,905821
+U12 update,optimized,206309
+Trailing DGEMM,optimized,227622
+Triangular solve,optimized,175777
+Total,optimized,1526260

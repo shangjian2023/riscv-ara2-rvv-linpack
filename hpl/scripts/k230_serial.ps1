@@ -13,10 +13,35 @@ $p.RtsEnable = $true
 try {
     $p.Open()
     if ($Login) {
-        $p.Write("root`r`n")
-        Start-Sleep -Seconds 2
-        $initial = $p.ReadExisting()
-        if ($initial) { Write-Output $initial }
+        # Wait for a recognizable console state, then log in only if needed.
+        # Handles: already-logged-in shell, login prompt, or board still booting.
+        $deadline = [Diagnostics.Stopwatch]::StartNew()
+        $ready = $false
+        while (-not $ready -and $deadline.Elapsed.TotalSeconds -lt 25) {
+            $p.Write("`r`n")
+            Start-Sleep -Milliseconds 1200
+            $probe = $p.ReadExisting()
+            if ($probe) { Write-Output $probe }
+            if ($probe -match 'login:\s*$') {
+                $p.Write("root`r`n")
+                Start-Sleep -Seconds 2
+                $loginOut = $p.ReadExisting()
+                if ($loginOut) { Write-Output $loginOut }
+                if ($loginOut -match 'Password:\s*$') {
+                    $p.Write("`r`n")
+                    Start-Sleep -Seconds 2
+                    $pwOut = $p.ReadExisting()
+                    if ($pwOut) { Write-Output $pwOut }
+                }
+                $ready = $true
+            } elseif ($probe -match '[#]\s*$') {
+                # Already at a root shell; nothing to do.
+                $ready = $true
+            }
+        }
+        if (-not $ready) {
+            Write-Output "WARN: no shell or login prompt detected within 25s; sending command anyway"
+        }
     }
     $p.Write($Command + "`r`n")
     $p.Write('echo __K230_RC__=$?' + "`r`n")

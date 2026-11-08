@@ -1,0 +1,28 @@
+Program header number 0 in `/root/work/ara/results/local_linpack_20261108/4_lanes/n128_nb32/linpack.elf' is not of type PT_LOAD; ignoring.
+Program header number 1 in `/root/work/ara/results/local_linpack_20261108/4_lanes/n128_nb32/linpack.elf' low is 80000000
+Program header number 1 in `/root/work/ara/results/local_linpack_20261108/4_lanes/n128_nb32/linpack.elf' high is 8006ff07
+Program header number 2 in `/root/work/ara/results/local_linpack_20261108/4_lanes/n128_nb32/linpack.elf' is not of type PT_LOAD; ignoring.
+Set `ram TOP.ara_tb_verilator.dut.i_ara_soc.i_dram 10 0x80000000 0x2000000 write with offset: 0x0 write with size: 0x6ff08
+Simulation of Ara
+=================
+
+
+Simulation running, end by pressing CTRL-c.
+
+==============================================
+  LINPACK on Ara2 (RVV 1.0) - RTL-measured    
+==============================================
+CFG,lanes=4,vlen=4096,sweepN=64,linpackN=128,nbMax=32,reps=1,mode=lp_only
+RES,phase=lp,var=linpack,mr=8,lmul=2,kc=128,pipe=0,N=128,nb=32,cycles=5708946,fpcyc=0.251,util=3.13,resid=0.004619368,chk=f7144d92f7144d92c8f0ad66
+RES,phase=lp,var=linpack,mr=4,lmul=1,kc=64,pipe=0,N=128,nb=32,cycles=5799204,fpcyc=0.247,util=3.08,resid=0.004619368,chk=f7144d92f7144d92c8f0ad66
+DONE,fails=0
+[hw-cycles]:           0
+[28083882] -Info: ara_tb_verilator.sv:51: TOP.ara_tb_verilator: Core Test *** SUCCESS *** (tohost = 0)
+- /root/work/ara/hardware/tb/ara_tb_verilator.sv:54: Verilog $finish
+Received $finish() from Verilog, shutting down simulation.
+
+Simulation statistics
+=====================
+Executed cycles:  d64355
+Wallclock time:   1557.81 s
+Simulation speed: 9013.92 cycles/s (9.01392 kHz)

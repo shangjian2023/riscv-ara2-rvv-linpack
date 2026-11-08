@@ -1,0 +1,7 @@
+comparison,N,NB,runs,blas,gflops
+Same-shape BLAS,1000,128,1,Reference BLAS,0.20729
+Same-shape BLAS,1000,128,1,OpenBLAS RVV,1.3239
+OpenBLAS scaling,4096,128,1,OpenBLAS NB128,1.7394
+OpenBLAS scaling,4096,256,3,OpenBLAS NB256 median,1.7755
+OpenBLAS scaling,8192,256,1,OpenBLAS NB256 single run,1.8848
+OpenBLAS scaling,8192,512,1,OpenBLAS NB512 single run,1.8829

@@ -1,0 +1,6 @@
+CFG,lanes=4,vlen=4096,sweepN=64,linpackN=128,nbMax=32,reps=1,mode=lp_only
+RES,phase=lp,var=linpack,mr=8,lmul=2,kc=128,pipe=0,N=128,nb=32,cycles=5714244,fpcyc=0.250,util=3.13,resid=0.004619368,chk=f7144d92f7144d92c8f0ad66
+PROF,N=128,nb=32,mr=8,lmul=2,panel=3420812,u12=1732536,dgemm=227307,solve=322778
+RES,phase=lp,var=linpack,mr=4,lmul=1,kc=64,pipe=0,N=128,nb=32,cycles=5808106,fpcyc=0.246,util=3.08,resid=0.004619368,chk=f7144d92f7144d92c8f0ad66
+PROF,N=128,nb=32,mr=4,lmul=1,panel=3420074,u12=1732248,dgemm=320692,solve=324322
+DONE,fails=0
