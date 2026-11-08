@@ -1,0 +1,33 @@
+# Static RISC-V cross-build for unmodified HPL 2.3 on K230.
+SHELL        = /bin/sh
+CD           = cd
+CP           = cp
+LN_S         = ln -fs
+MKDIR        = mkdir -p
+RM           = /bin/rm -f
+TOUCH        = touch
+ARCH         = k230cross
+TOPdir       = $(HPL_HOME)
+INCdir       = $(TOPdir)/include
+BINdir       = $(TOPdir)/bin/$(ARCH)
+LIBdir       = $(TOPdir)/lib/$(ARCH)
+HPLlib       = $(LIBdir)/libhpl.a
+MPdir        = $(K230_MPI_DIR)
+MPinc        = -I$(MPdir)/include
+MPlib        = $(MPdir)/lib/libmpi.a -lpthread -ldl -lrt
+LAdir        =
+LAinc        =
+LAlib        = $(K230_BLAS_LIB) -lgfortran -lm
+F2CDEFS      = -DAdd_ -DF77_INTEGER=int -DStringSunStyle
+HPL_INCLUDES = -I$(INCdir) -I$(INCdir)/$(ARCH) $(LAinc) $(MPinc)
+HPL_LIBS     = $(HPLlib) $(LAlib) $(MPlib)
+HPL_OPTS     = -DHPL_DETAILED_TIMING
+HPL_DEFS     = $(F2CDEFS) $(HPL_OPTS) $(HPL_INCLUDES)
+CC           = $(HPL_MPICC)
+CCNOOPT      = $(HPL_DEFS) -O0 -march=rv64gcv -mabi=lp64d
+CCFLAGS      = $(HPL_DEFS) $(HPL_CFLAGS)
+LINKER       = $(CC)
+LINKFLAGS    = $(CCFLAGS) -static
+ARCHIVER     = $(HPL_AR)
+ARFLAGS      = r
+RANLIB       = $(HPL_RANLIB)

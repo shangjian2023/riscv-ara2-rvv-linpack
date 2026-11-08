@@ -18,6 +18,11 @@ teammate_draft/riscv/linpack-ara2/build/
 # Official HPL architecture builds (upstream sources remain tracked)
 third_party/hpl-2.3/Make.local
 third_party/hpl-2.3/Make.k230
+third_party/hpl-2.3/Make.k230cross
 third_party/hpl-2.3/**/local/
 third_party/hpl-2.3/**/k230/
+third_party/hpl-2.3/**/k230cross/
+third_party/hpl-2.3/bin/
+third_party/hpl-2.3/lib/
+hpl/build/
 hpl/results/*/

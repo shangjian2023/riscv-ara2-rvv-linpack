@@ -9,16 +9,25 @@ archive hash.
 ## Current status
 
 The official upstream `xhpl` has been built and run on local x86_64 WSL using
-OpenMPI 4.1.6 and the reference BLAS. These are build/correctness checks, not
-K230 performance claims.
+OpenMPI 4.1.6 and on the CanMV-K230 using a static RISC-V MPICH/reference BLAS
+build. The x86_64 runs are workflow checks, not K230 performance claims.
 
-| Platform | MPI ranks | N | NB | P×Q | GFLOPS | Scaled residual | Official result |
-|---|---:|---:|---:|---:|---:|---:|---|
-| local x86_64 | 1 | 1000 | 128 | 1×1 | 4.4380 | 7.94584678e-03 | PASSED |
-| local x86_64 | 2 | 1024 | 128 | 1×2 | 7.1378 | 5.61442609e-03 | PASSED |
+| Platform | MPI ranks | N | NB | P×Q | Time (s) | GFLOPS | Scaled residual | Official result |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| local x86_64 | 1 | 1000 | 128 | 1×1 | 0.15 | 4.4380 | 7.94584678e-03 | PASSED |
+| local x86_64 | 2 | 1024 | 128 | 1×2 | 0.10 | 7.1378 | 5.61442609e-03 | PASSED |
+| CanMV-K230 C908, one Linux CPU | 1 | 1000 | 128 | 1×1 | 3.22 | 0.20729 | 6.05923578e-03 | PASSED |
 
-Full outputs are in `results/local_np1_openmpi.log` and
-`results/local_np2_openmpi.log`. K230 board execution is still pending.
+Full outputs are in `results/local_np1_openmpi.log`,
+`results/local_np2_openmpi.log`, and `results/k230_np1_mpich.log`. The K230 log
+ends with the official `1 tests completed and passed residual checks` and
+`0 tests completed and failed residual checks` lines. Its raw serial transcript
+is retained as `results/k230_np1_serial.txt`.
+
+The current K230 image exposes only `cpu0`; this is a single-rank/single-CPU
+result, not a dual-core measurement. The reference BLAS build establishes an
+official correctness baseline and is not an optimized K230 peak-performance
+claim.
 
 ## Local build and validation
 
@@ -43,7 +52,56 @@ run commands. MPICH is also supported through `MPICC`/`MPIRUN`, but the local
 WSL MPICH installation failed a minimal two-rank communicator test, so the
 recorded validation uses OpenMPI.
 
-## Native K230 build and run
+## Static K230 cross-build and serial run
+
+No BW/cloud instance is needed. Install a RISC-V cross toolchain, then build
+reference BLAS and MPICH as described in [PROVENANCE.md](PROVENANCE.md). Set
+`K230_MPI_DIR` to the MPICH install prefix and `K230_BLAS_LIB` to the resulting
+`blas_LINUX.a`:
+
+```bash
+K230_MPI_DIR=/tmp/k230-hpl-cross/install \
+K230_BLAS_LIB=/tmp/k230-hpl-cross/src/blas-3.12.0/blas_LINUX.a \
+  bash hpl/scripts/build_hpl.sh k230cross
+
+mkdir -p hpl/build/k230
+cp third_party/hpl-2.3/bin/k230cross/xhpl hpl/build/k230/xhpl
+riscv64-linux-gnu-strip hpl/build/k230/xhpl
+gzip -9 -c hpl/build/k230/xhpl > hpl/build/k230/xhpl.gz
+cp hpl/HPL.single.dat hpl/build/k230/HPL.dat
+```
+
+For a CH342 console on COM3, the checked XMODEM script transfers both files,
+removes XMODEM's final-block padding, and compares the board SHA-256 with the
+local file. From Git Bash, keep `MSYS2_ARG_CONV_EXCL` set so `/root/...` is not
+rewritten as a Windows path:
+
+```bash
+MSYS2_ARG_CONV_EXCL='*' powershell.exe -NoProfile -ExecutionPolicy Bypass \
+  -File C:\\Data\\projects\\risc-v\\hpl\\scripts\\k230_upload_xmodem.ps1 \
+  -FilePath C:\\Data\\projects\\risc-v\\hpl\\build\\k230\\xhpl.gz \
+  -RemotePath /root/hpl/xhpl.gz -Port COM3
+MSYS2_ARG_CONV_EXCL='*' powershell.exe -NoProfile -ExecutionPolicy Bypass \
+  -File C:\\Data\\projects\\risc-v\\hpl\\scripts\\k230_upload_xmodem.ps1 \
+  -FilePath C:\\Data\\projects\\risc-v\\hpl\\build\\k230\\HPL.dat \
+  -RemotePath /root/hpl/HPL.dat -Port COM3
+```
+
+A successful transfer prints `TRANSFER_VERIFIED`, not merely `upload complete`.
+Then unpack and run one rank on the board:
+
+```bash
+powershell.exe -NoProfile -ExecutionPolicy Bypass \
+  -File C:\\Data\\projects\\risc-v\\hpl\\scripts\\k230_serial.ps1 \
+  -Port COM3 -TimeoutSec 300 \
+  -Command 'cd /root/hpl && gzip -d xhpl.gz && chmod 755 xhpl && ./xhpl > hpl.log 2>&1 && cat hpl.log'
+```
+
+Only record the run if the official output contains both the one-passed and
+zero-failed lines. The uploaded `HPL.dat` is the N=1000, NB=128, P=Q=1 smoke
+test, not a tuned maximum-memory HPL configuration.
+
+## Optional native K230 build and run
 
 No BW/cloud instance is needed. Run these commands on the K230 Linux system
 with an MPI compiler and Fortran BLAS development library installed:

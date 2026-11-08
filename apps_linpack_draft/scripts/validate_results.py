@@ -117,7 +117,7 @@ check(summary["配置空间最优/最差差距"] ==
       "K230 summary configuration span does not match raw data")
 
 hpl_rows = read_csv(ROOT / "hpl/results/summary.csv")
-check(len(hpl_rows) == 2, f"official HPL summary row count: {len(hpl_rows)} != 2")
+check(len(hpl_rows) == 3, f"official HPL summary row count: {len(hpl_rows)} != 3")
 for r in hpl_rows:
     label = f"HPL {r['platform']} np={r['ranks']}"
     log = (ROOT / "hpl/results" / r["log"]).read_text(encoding="utf-8")

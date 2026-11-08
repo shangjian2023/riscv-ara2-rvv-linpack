@@ -1,0 +1,20 @@
+platform=CanMV-K230 V3.0
+cpu=XuanTie C908, VLEN=128, Linux exposes cpu0 only
+nproc=1
+os=Buildroot Linux 6.6.36, glibc 2.33
+source=unmodified Netlib HPL 2.3
+source_sha256=32c5c17d22330e6f2337b681aded51637fb6008d3f0eb7c277b163fadd612830
+mpi=MPICH 4.2.0 static, ch3:sock, --with-pm=no --with-pmi=pmi1
+blas=reference BLAS 3.12.0 static
+compiler=riscv64-linux-gnu-gcc
+cflags=-O3 -march=rv64gcv -mabi=lp64d -fomit-frame-pointer -funroll-loops -Wall
+linkflags=-static
+ranks=1
+launcher=none; direct single-process execution
+input=HPL.single.dat (N=1000, NB=128, P=1, Q=1)
+command=cd /root/hpl && ./xhpl > hpl.log 2>&1
+result=PASSED (1 passed, 0 failed)
+time_s=3.22
+gflops=2.0729e-01
+residual=6.05923578e-03
+note=Correctness baseline with reference BLAS; not an optimized or dual-core performance claim.
