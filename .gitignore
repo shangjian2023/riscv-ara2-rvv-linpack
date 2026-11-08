@@ -28,6 +28,7 @@ hpl/build/
 hpl/results/*/
 
 # Local tool downloads and rebuildable demo intermediates
+.claude/scheduled_tasks.lock
 .tools/
 deliverables/
 demo/build/
