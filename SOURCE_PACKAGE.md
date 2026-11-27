@@ -3,10 +3,9 @@
 ## 固定版本
 
 - 远程仓库：https://github.com/shangjian2023/riscv-ara2-rvv-linpack
-- 工作分支：`feat/cloud-priority`
-- 发布标签：`cie-final-20261108-source`
-- 源码ZIP由对应Git提交直接执行 `git archive` 生成；提交ID、包SHA-256和视频SHA-256记录在同目录的 `SHA256SUMS.txt` 与 `RELEASE_MANIFEST.json` 中。
-- ZIP内不包含 `.git`、本地密钥、云端凭据、教师/队友原始报告、可重建目标文件或视频分段。
+- 主分支：`main`（与 `feat/cloud-priority` 同步）
+- 源码ZIP由对应Git提交直接执行 `git archive` 生成；提交ID、包SHA-256、PDF与视频SHA-256记录在同目录的 `SHA256SUMS.txt` 与 `RELEASE_MANIFEST.json` 中。
+- ZIP内不包含 `.git`、本地密钥、云端凭据、报名接口原始文件、个人联系方式、教师/队友原始报告、可重建目标文件或视频分段。
 
 ## 一键核验已归档结果
 

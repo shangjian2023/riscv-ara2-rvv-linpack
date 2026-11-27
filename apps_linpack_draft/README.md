@@ -267,10 +267,9 @@ e8_compare.py 把实测行与初稿解析模型并排(全部按周期对比,与�
 ## WSL 环境实测记录(2026-11-02,Ubuntu 24.04 / 32T / 7GB)
 
 
-- **GitHub 从 WSL 直连被 SNI 阻断**(github.com 000×3),codeload 可达;
-  全量走 `gh-proxy.com` 镜像:`git config --global
-  url."https://gh-proxy.com/https://github.com/".insteadOf ...` +
-  下载 URL 前缀。PyPI 直连正常
+- **网络依赖说明**：`make verilator` 和 `make -C hardware checkout` 默认直连
+  官方 GitHub 仓库（如在受限网络环境，建议配置离线源码缓存或受信任的本地代理，
+  避免使用未经审计的第三方镜像重写 GitHub URL）。PyPI 直连正常
 - Verilator:仓库锁定 commit 06263ec → **5.047 devel**,`make verilator` 前需
   apt:autoconf automake libtool help2man flex bison libfl-dev g++(flex 在
   dpkg 中断中丢失过一次,报错却是 configure 失败——注意甄别)

@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
 # wsl_setup_rtl.sh - Ara RTL environment setup in WSL (run as root)
-# GitHub is unreachable directly from this WSL (SNI-blocked); all github
-# traffic goes through the gh-proxy.com mirror via git insteadOf rewrite.
+# Downloads official GitHub releases directly by default.
 set -exo pipefail
 cd /root/work/ara
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
-MIRROR="https://gh-proxy.com/"
-
-# 0) route all git github traffic through the mirror (idempotent)
-git config --global url."${MIRROR}https://github.com/".insteadOf "https://github.com/"
 
 # 1) bender
 if ! command -v bender >/dev/null 2>&1; then
-  log "installing bender (via mirror)"
-  curl -sL --retry 3 -o /tmp/bender.tar.xz \
-    ${MIRROR}https://github.com/pulp-platform/bender/releases/download/v0.32.1/bender-x86_64-unknown-linux-gnu.tar.xz
+  log "installing bender"
+  curl -fsSL --retry 3 -o /tmp/bender.tar.xz \
+    https://github.com/pulp-platform/bender/releases/download/v0.32.1/bender-x86_64-unknown-linux-gnu.tar.xz
   tar -xJf /tmp/bender.tar.xz -C /tmp
   install -m755 /tmp/bender-x86_64-unknown-linux-gnu/bender /usr/local/bin/bender
 fi

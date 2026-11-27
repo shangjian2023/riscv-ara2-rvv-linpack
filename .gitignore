@@ -32,6 +32,12 @@ hpl/results/*/
 .tools/
 deliverables/
 demo/build/
+/光明未来-最终交付包.zip
+
+# Local browser/registration helpers, raw portal dumps, and internal status notes
+.ab-init.js
+competition_archive/*_raw.txt
+导师汇报_技术路线与进展_2026-11-04.md
 
 # Rebuildable RTL objects and binaries; retain source, logs, dumps and hashes
 apps_linpack_draft/results/local_rtl/**/*.o
