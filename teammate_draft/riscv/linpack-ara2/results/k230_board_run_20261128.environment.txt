@@ -1,0 +1,11 @@
+run_date=2026-11-28
+platform=CanMV-K230 V3.0, XuanTie C908, RVV 1.0, VLEN=128
+os=Buildroot Linux 6.6.36
+port=COM3, 115200 8N1
+launcher=serial shell, direct single process
+program=/tmp/bench
+local_binary_sha256=ea8a2011e8b0d467eeb937014de5c1df9fda5c330196c5717af321c9cadb37c4
+remote_transfer_sha256=ea8a2011e8b0d467eeb937014de5c1df9fda5c330196c5717af321c9cadb37c4
+checks=28/28, max_diff=0
+linpack=single-run N=128/192/256, NB=32
+result_note=single rerun, not a replacement for historical medians
