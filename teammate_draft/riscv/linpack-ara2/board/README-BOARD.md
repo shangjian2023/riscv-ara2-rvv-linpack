@@ -30,6 +30,9 @@ CanMV-K230 V3.0（创乐博，玄铁 C908，RVV 1.0，VLEN=128）实测。
    两个坑：①周期性回车会打断 U-Boot 自动启动倒计时——只在完全无输出时才探测，
    停在 `K230#` 提示符就发 `boot`；②expect 完成标志用 `echo RC=$?` 的展开值
    `RC=0` 匹配，防命令回显自匹配。
+5. **启用 B 矩阵分块打包**：在 WSL 中执行 `PACK_B=1 bash scripts/build_and_run.sh 128`。
+   默认 `PACK_B=0` 保留未打包基线。打包版在同形状 K230 测试中改善大规模矩阵的连续访问，
+   运行前后都必须保留 `max_diff=0` 和 Linpack 残差。
 5. Linux root 无密码自动登录；`/bench` 输出 CSV 经串口回传。
 
 ## 板上关键观察
